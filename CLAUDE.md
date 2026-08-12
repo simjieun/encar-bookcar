@@ -47,9 +47,13 @@ Tailwind 유틸리티만으로 작성하지 않는다. `app/globals.css`(약 880
 
 ## DB
 
-DB 접근은 반드시 `getDb()`(`db/index.ts`)를 거친다. lazy singleton이라 모듈 import 시점이 아니라 **호출 시점에** `DATABASE_URL`을 검사한다 — DB 없이도 빌드·테스트가 돌아가는 이유이므로, 모듈 최상위에서 커넥션을 만들지 말 것.
+공유 PostgreSQL(Supabase)에 postgres-js로 붙는다. DB 접근은 반드시 `getDb()`(`db/index.ts`)를 거친다. lazy singleton이라 모듈 import 시점이 아니라 **호출 시점에** `DATABASE_URL`을 검사한다 — 모듈 최상위에서 커넥션을 만들지 말 것.
 
-`db/schema.ts`를 바꾸면 `npm run db:generate`로 마이그레이션을 생성한다. 주의: `drizzle/meta/_journal.json`이 `dialect: "sqlite"`인 채로 남아 있어 `drizzle.config.ts`의 `postgresql`과 어긋난다. 첫 마이그레이션을 만들 때 이 파일을 정리해야 한다.
+- `DATABASE_URL` — 앱 런타임. Supabase 트랜잭션 풀러(6543)라서 `postgres()`에 `prepare: false`가 필수다.
+- `DIRECT_URL` — `drizzle.config.ts`가 쓰는 마이그레이션용 direct 연결(5432). DDL과 advisory lock 때문에 풀러로는 안 된다.
+- `TEST_DATABASE_URL` — 테스트 전용. `tests/setup.ts`가 이 값으로 `DATABASE_URL`을 덮어쓰고, 없으면 지운다. 운영 DB 오염 방지 장치이므로 우회하지 말 것.
+
+`db/schema.ts`를 바꾸면 `npm run db:generate`로 마이그레이션을 생성하고 `npm run db:migrate`로 적용한다. 런타임에도 `ensureDatabase()`가 `drizzle/`를 읽어 마이그레이션을 적용하므로, `next.config.ts`의 `outputFileTracingIncludes`에서 이 폴더를 빼면 배포 시 죽는다.
 
 ## 현재 구현 범위
 
