@@ -110,6 +110,8 @@ export function LoginForm() {
 				)}
 			</button>
 
+			<p className="auth-switch">비밀번호를 잊으셨나요? 북카 관리자에게 초기화를 요청해 주세요.</p>
+
 			<p className="auth-switch">
 				아직 계정이 없나요? <Link href="/signup">회원가입</Link>
 			</p>

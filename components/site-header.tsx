@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { BookOpen, Plus } from 'lucide-react';
 
-export function SiteHeader({ userName }: { userName?: string }) {
+export function SiteHeader({ userName, isAdmin }: { userName?: string; isAdmin?: boolean }) {
 	return (
 		<header className="app-header">
 			<Link
@@ -29,6 +29,7 @@ export function SiteHeader({ userName }: { userName?: string }) {
 						내 대여
 					</Link>
 				)}
+				{isAdmin && <Link href="/admin/members">회원 관리</Link>}
 				<Link
 					className="app-header-add"
 					href="/books/new"
