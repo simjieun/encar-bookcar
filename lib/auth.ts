@@ -10,9 +10,14 @@ if (process.env.NODE_ENV === 'production' && !process.env.BETTER_AUTH_SECRET) {
 	throw new Error('운영 환경에는 BETTER_AUTH_SECRET이 필요합니다.');
 }
 
+// 프리뷰 배포는 URL이 매번 바뀌므로 Vercel이 주입하는 VERCEL_URL로 폴백한다.
+const baseURL =
+	process.env.BETTER_AUTH_URL ??
+	(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+
 export const auth = betterAuth({
 	appName: '엔카북카',
-	baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:3000',
+	baseURL,
 	secret: process.env.BETTER_AUTH_SECRET ?? developmentSecret,
 	database: drizzleAdapter(getDb(), {
 		provider: 'pg',
@@ -35,7 +40,7 @@ export const auth = betterAuth({
 			'/sign-up/email': { window: 60, max: 5 },
 		},
 	},
-	trustedOrigins: [process.env.BETTER_AUTH_URL ?? 'http://localhost:3000'],
+	trustedOrigins: [baseURL],
 	advanced: {
 		cookiePrefix: 'encar-bookcar',
 		useSecureCookies: process.env.NODE_ENV === 'production',

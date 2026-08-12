@@ -91,7 +91,7 @@ export function SignupForm() {
 					id="email"
 					type="email"
 					autoComplete="email"
-					placeholder="name@company.com"
+					placeholder="name@encar.com"
 					aria-invalid={Boolean(errors.email)}
 					{...register('email')}
 				/>
