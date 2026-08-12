@@ -51,10 +51,22 @@ openssl rand -base64 32
 KAKAO_REST_API_KEY=발급받은_REST_API_키
 ```
 
+### 관리자 지정
+
+비밀번호 초기화는 관리자만 할 수 있습니다. 첫 관리자는 DB에서 직접 지정합니다. Supabase 대시보드의 SQL Editor에서 한 번만 실행하면 됩니다.
+
+```sql
+update "user" set role = 'admin' where email = '관리자@encar.com';
+```
+
+지정된 계정으로 로그인하면 헤더에 **회원 관리** 메뉴가 생기고 `/admin/members`가 열립니다. 다른 사람에게는 이 경로가 404로 보입니다.
+
 ## MVP 구현 범위
 
 - `/signup`: 이름, 회사 이메일, 비밀번호 회원가입
 - `/login`: 이메일과 비밀번호 로그인
+- `/admin/members`: 관리자가 회원 비밀번호를 임시 비밀번호로 초기화(1회만 표시)
+- `/profile`: 임시 비밀번호로 로그인한 뒤 본인이 직접 비밀번호 변경(변경 시 다른 기기 세션 해제)
 - `/profile`: 로그인 사용자만 볼 수 있는 기본 프로필
 - Better Auth 기반 세션 유지와 로그아웃
 - 중복 가입, 잘못된 로그인, 가입·로그인 시도 제한

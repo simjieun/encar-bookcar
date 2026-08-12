@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { BookOpen, BookOpenCheck, ChevronRight, Mail, ShieldCheck, UserRound } from 'lucide-react';
+import { BookOpen, BookOpenCheck, ChevronRight, KeyRound, Mail, ShieldCheck, UserRound } from 'lucide-react';
+import { ChangePasswordForm } from '@/components/auth/change-password-form';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { getCurrentSession } from '@/lib/auth-session';
 
@@ -108,6 +109,22 @@ export default async function ProfilePage() {
 						<Link href="/loans">
 							<BookOpenCheck size={17} /> 내 대여 현황
 						</Link>
+					</section>
+
+					<section
+						className="profile-card"
+						aria-labelledby="password-heading"
+					>
+						<div className="profile-card-heading">
+							<div>
+								<p>SECURITY</p>
+								<h2 id="password-heading">비밀번호 변경</h2>
+							</div>
+							<span className="verified-badge">
+								<KeyRound size={15} /> 계정 보호
+							</span>
+						</div>
+						<ChangePasswordForm />
 					</section>
 				</div>
 			</div>

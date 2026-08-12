@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth';
 import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { admin } from 'better-auth/plugins';
 import { getDb } from '@/db';
 import { isAllowedEmailDomain } from '@/lib/schemas/auth';
 
@@ -27,6 +28,7 @@ export const auth = betterAuth({
 		minPasswordLength: 8,
 		maxPasswordLength: 128,
 	},
+	plugins: [admin()],
 	session: {
 		expiresIn: 60 * 60 * 24 * 7,
 		updateAge: 60 * 60 * 24,
@@ -38,6 +40,8 @@ export const auth = betterAuth({
 		customRules: {
 			'/sign-in/email': { window: 60, max: 10 },
 			'/sign-up/email': { window: 60, max: 5 },
+			'/change-password': { window: 60, max: 5 },
+			'/admin/set-user-password': { window: 60, max: 10 },
 		},
 	},
 	trustedOrigins: [baseURL],
@@ -47,12 +51,16 @@ export const auth = betterAuth({
 	},
 	hooks: {
 		before: createAuthMiddleware(async (context) => {
-			if (context.path !== '/sign-up/email') {
+			const isSignUp = context.path === '/sign-up/email';
+
+			// 비밀번호가 새로 정해지는 모든 경로가 같은 규칙을 쓰도록 한 자리에서 검사한다.
+			const passwordPaths = ['/sign-up/email', '/change-password', '/admin/set-user-password'];
+			if (!passwordPaths.includes(context.path)) {
 				return;
 			}
 
-			const body = context.body as { email?: string; password?: string } | undefined;
-			const password = body?.password ?? '';
+			const body = context.body as { email?: string; password?: string; newPassword?: string } | undefined;
+			const password = body?.password ?? body?.newPassword ?? '';
 
 			if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
 				throw new APIError('BAD_REQUEST', {
@@ -60,7 +68,7 @@ export const auth = betterAuth({
 				});
 			}
 
-			if (body?.email && !isAllowedEmailDomain(body.email)) {
+			if (isSignUp && body?.email && !isAllowedEmailDomain(body.email)) {
 				throw new APIError('BAD_REQUEST', {
 					message: '회사에서 허용한 이메일로 가입해 주세요.',
 				});

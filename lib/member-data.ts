@@ -4,6 +4,14 @@ import { asc, ilike, or } from 'drizzle-orm';
 import { ensureDatabase, getDb } from '@/db';
 import { user } from '@/db/schema';
 
+export async function listMembers() {
+	await ensureDatabase();
+	return getDb()
+		.select({ id: user.id, name: user.name, email: user.email, role: user.role, createdAt: user.createdAt })
+		.from(user)
+		.orderBy(asc(user.name));
+}
+
 export async function searchMembers(query: string) {
 	await ensureDatabase();
 	const pattern = `%${query}%`;
