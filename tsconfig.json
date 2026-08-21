@@ -14,7 +14,9 @@
 		"jsx": "react-jsx",
 		"incremental": true,
 		"paths": {
-			"@/*": ["./*"]
+			"@/*": ["./*"],
+			// @toast-ui/editor 3.2.2의 package.json exports에 types 조건이 없어 bundler 해석이 실패한다.
+			"@toast-ui/editor": ["./node_modules/@toast-ui/editor/types/index.d.ts"]
 		},
 		"plugins": [
 			{
