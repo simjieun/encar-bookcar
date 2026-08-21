@@ -1,13 +1,13 @@
 import { ArrowRight, BookOpen, ChevronRight, Plus, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { BookDiscovery } from '@/components/book-discovery';
-import { getCurrentSession } from '@/lib/auth-session';
+import { SiteHeader } from '@/components/site-header';
 import { getBookStats } from '@/lib/book-data';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-	const [session, stats] = await Promise.all([getCurrentSession(), getBookStats()]);
+	const stats = await getBookStats();
 	const bookStats = [
 		{ value: `${stats.total}권`, label: '함께 읽는 책' },
 		{ value: `${stats.owners}명`, label: '책을 나눈 동료' },
@@ -15,49 +15,7 @@ export default async function Home() {
 	];
 	return (
 		<main className="min-h-screen overflow-hidden bg-white">
-			<header className="site-container relative z-30 flex h-20 items-center justify-between">
-				<a
-					className="group flex items-center gap-2.5"
-					href="#top"
-					aria-label="엔카북카 홈"
-				>
-					<span
-						className="brand-mark"
-						aria-hidden="true"
-					>
-						<BookOpen
-							size={21}
-							strokeWidth={2.6}
-						/>
-					</span>
-					<span className="text-[19px] font-extrabold tracking-[-0.045em] text-strong">엔카북카</span>
-				</a>
-
-				<nav
-					className="hidden items-center gap-1 md:flex"
-					aria-label="주요 메뉴"
-				>
-					<Link
-						className="nav-link"
-						href="/books"
-					>
-						책 둘러보기
-					</Link>
-					<a
-						className="nav-link"
-						href="#share"
-					>
-						북클럽 소개
-					</a>
-				</nav>
-
-				<a
-					className="login-button"
-					href={session ? '/profile' : '/login'}
-				>
-					{session ? `${session.user.name}님` : '로그인'}
-				</a>
-			</header>
+			<SiteHeader />
 
 			<section
 				id="top"

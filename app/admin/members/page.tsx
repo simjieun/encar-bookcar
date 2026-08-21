@@ -29,10 +29,7 @@ export default async function AdminMembersPage() {
 
 	return (
 		<>
-			<SiteHeader
-				userName={session.user.name}
-				isAdmin
-			/>
+			<SiteHeader />
 			<main className="site-container admin-page">
 				<div className="section-heading-row">
 					<div>

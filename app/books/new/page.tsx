@@ -15,7 +15,7 @@ export default async function NewBookPage() {
 	if (!session) redirect('/login?returnTo=/books/new');
 	return (
 		<main className="book-form-page">
-			<SiteHeader userName={session.user.name} />
+			<SiteHeader />
 			<section className="book-form-hero">
 				<p>ADD A BOOK</p>
 				<h1>
