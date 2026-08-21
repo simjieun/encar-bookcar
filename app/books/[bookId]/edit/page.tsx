@@ -34,7 +34,7 @@ export default async function EditBookPage({ params }: { params: Promise<{ bookI
 	};
 	return (
 		<main className="book-form-page">
-			<SiteHeader userName={session.user.name} />
+			<SiteHeader />
 			<section className="book-form-hero compact">
 				<p>EDIT BOOK</p>
 				<h1>책 정보를 수정해요</h1>

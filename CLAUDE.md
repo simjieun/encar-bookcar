@@ -69,7 +69,9 @@ Better Auth(`lib/auth.ts`)로 이메일·비밀번호 로그인을 처리한다.
 
 ## 현재 구현 범위
 
-홈·책 목록·책 등록/수정·대출/예약·회원 관리까지 DB와 연결되어 동작한다. 하드코딩된 데이터는 없다.
+홈·책 목록·책 등록/수정·대출/예약·회원 관리·독서 피드까지 DB와 연결되어 동작한다. 하드코딩된 데이터는 없다.
+
+피드(`/feeds`)는 **내가 빌린 이력이 있는 책**(loans가 BORROWED·RETURN_REQUESTED·RETURNED)에만 쓸 수 있고, 목록은 전체 공개다. 본문은 TUI Editor 마크다운 원문으로 저장하고 렌더링은 TUI Viewer가 sanitize해서 처리한다 — HTML을 직접 주입하지 말 것. React 래퍼(`@toast-ui/react-editor`)는 peer가 React 17이라 쓰지 않고, vanilla 인스턴스를 `useEffect` 안에서 동적 import한다(`components/feeds/markdown-{editor,viewer}.tsx`). 이 패키지는 `exports`에 types 조건이 없어 tsconfig `paths`로 타입 경로를 직접 지정해 두었다.
 
 설치만 되어 있고 아직 배선되지 않은 것 — 기능을 붙일 때 새 라이브러리를 추가하기 전에 이것부터 쓴다:
 

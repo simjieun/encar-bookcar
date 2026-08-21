@@ -1,4 +1,4 @@
-import { boolean, check, index, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { boolean, check, index, pgTable, text, timestamp, uniqueIndex, uuid, type AnyPgColumn } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 export const user = pgTable('user', {
@@ -141,5 +141,49 @@ export const loans = pgTable(
 			'loans_status_check',
 			sql`${table.status} in ('REQUESTED', 'APPROVED', 'REJECTED', 'BORROWED', 'RETURN_REQUESTED', 'RETURNED', 'CANCELLED')`,
 		),
+	],
+);
+
+export const feeds = pgTable(
+	'feeds',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		bookId: uuid('book_id')
+			.notNull()
+			.references(() => books.id, { onDelete: 'restrict' }),
+		authorId: text('author_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		title: text('title').notNull(),
+		// TUI Editor가 저장하는 마크다운 원문. 렌더링은 뷰어가 sanitize해서 처리한다.
+		content: text('content').notNull(),
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+		updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index('feeds_created_at_idx').on(table.createdAt),
+		index('feeds_author_id_idx').on(table.authorId),
+		index('feeds_book_id_idx').on(table.bookId),
+	],
+);
+
+export const feedComments = pgTable(
+	'feed_comments',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		feedId: uuid('feed_id')
+			.notNull()
+			.references(() => feeds.id, { onDelete: 'cascade' }),
+		authorId: text('author_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		// 대댓글의 부모. 1단계까지만 허용하므로 여기에는 항상 최상위 댓글이 들어간다.
+		parentId: uuid('parent_id').references((): AnyPgColumn => feedComments.id, { onDelete: 'cascade' }),
+		content: text('content').notNull(),
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index('feed_comments_feed_id_created_at_idx').on(table.feedId, table.createdAt),
+		index('feed_comments_parent_id_idx').on(table.parentId),
 	],
 );

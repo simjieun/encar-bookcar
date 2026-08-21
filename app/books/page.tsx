@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { BookCatalog } from '@/components/books/book-catalog';
 import { SiteHeader } from '@/components/site-header';
-import { getCurrentSession } from '@/lib/auth-session';
 
 export const metadata: Metadata = {
 	title: '책 둘러보기 | 엔카북카',
@@ -10,10 +9,9 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function BooksPage() {
-	const session = await getCurrentSession();
 	return (
 		<main className="books-page">
-			<SiteHeader userName={session?.user.name} />
+			<SiteHeader />
 			<section className="books-page-hero">
 				<p>OUR LIBRARY</p>
 				<h1>

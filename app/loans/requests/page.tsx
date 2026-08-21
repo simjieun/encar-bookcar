@@ -20,7 +20,7 @@ export default async function LoanRequestsPage() {
 
 	return (
 		<main className="loans-page">
-			<SiteHeader userName={session.user.name} />
+			<SiteHeader />
 			<section className="loans-hero compact">
 				<p>RESERVATION QUEUE</p>
 				<h1>

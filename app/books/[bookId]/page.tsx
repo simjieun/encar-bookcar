@@ -28,7 +28,7 @@ export default async function BookDetailPage({ params }: { params: Promise<{ boo
 
 	return (
 		<main className="book-detail-page">
-			<SiteHeader userName={session?.user.name} />
+			<SiteHeader />
 			<article className="book-detail-container">
 				<div className="book-detail-cover">
 					<BookCover

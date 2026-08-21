@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { BookOpen, BookOpenCheck, ChevronRight, KeyRound, Mail, ShieldCheck, UserRound } from 'lucide-react';
-import { ChangePasswordForm } from '@/components/auth/change-password-form';
-import { LogoutButton } from '@/components/auth/logout-button';
+import { BookOpenCheck, ChevronRight, KeyRound, Mail, NotebookPen, PenLine, Plus, ShieldCheck, UserRound } from 'lucide-react';
+import { FeedCard } from '@/components/feeds/feed-card';
+import { SiteHeader } from '@/components/site-header';
 import { getCurrentSession } from '@/lib/auth-session';
+import { listFeeds } from '@/lib/feed-data';
+
+const MY_FEED_PREVIEW = 5;
 
 export const metadata: Metadata = {
 	title: '내 정보 | 엔카북카',
@@ -19,6 +22,8 @@ export default async function ProfilePage() {
 		redirect('/login?returnTo=/profile');
 	}
 
+	// ponytail: 최근 몇 개만 미리 보여준다. 더 필요해지면 /feeds에 작성자 필터를 붙인다.
+	const myFeeds = await listFeeds({ authorId: session.user.id, limit: MY_FEED_PREVIEW });
 	const initial = session.user.name.trim().charAt(0).toUpperCase() || '책';
 	const joinedAt = new Intl.DateTimeFormat('ko-KR', {
 		year: 'numeric',
@@ -28,24 +33,7 @@ export default async function ProfilePage() {
 
 	return (
 		<main className="profile-page">
-			<header className="profile-header">
-				<Link
-					className="auth-brand"
-					href="/"
-				>
-					<span
-						className="brand-mark"
-						aria-hidden="true"
-					>
-						<BookOpen
-							size={21}
-							strokeWidth={2.6}
-						/>
-					</span>
-					<span>엔카북카</span>
-				</Link>
-				<LogoutButton />
-			</header>
+			<SiteHeader />
 
 			<div className="profile-container">
 				<section className="profile-hero">
@@ -82,7 +70,15 @@ export default async function ProfilePage() {
 								<dt>
 									<UserRound size={18} /> 이름
 								</dt>
-								<dd>{session.user.name}</dd>
+								<dd className="profile-name-row">
+									{session.user.name}
+									<Link
+										className="profile-password-link"
+										href="/profile/password"
+									>
+										<KeyRound size={14} /> 비밀번호 변경
+									</Link>
+								</dd>
 							</div>
 							<div>
 								<dt>
@@ -109,24 +105,54 @@ export default async function ProfilePage() {
 						<Link href="/loans">
 							<BookOpenCheck size={17} /> 내 대여 현황
 						</Link>
-					</section>
-
-					<section
-						className="profile-card"
-						aria-labelledby="password-heading"
-					>
-						<div className="profile-card-heading">
-							<div>
-								<p>SECURITY</p>
-								<h2 id="password-heading">비밀번호 변경</h2>
-							</div>
-							<span className="verified-badge">
-								<KeyRound size={15} /> 계정 보호
-							</span>
-						</div>
-						<ChangePasswordForm />
+						<Link href="/books/new">
+							<Plus size={17} /> 책 등록하기
+						</Link>
 					</section>
 				</div>
+
+				<section
+					className="profile-card profile-feeds"
+					aria-labelledby="my-feeds-heading"
+				>
+					<div className="profile-card-heading">
+						<div>
+							<p>MY FEED</p>
+							<h2 id="my-feeds-heading">내가 쓴 피드</h2>
+						</div>
+						<Link
+							className="profile-password-link"
+							href="/feeds/new"
+						>
+							<PenLine size={14} /> 피드 쓰기
+						</Link>
+					</div>
+
+					{myFeeds.feeds.length ? (
+						<>
+							<div className="feed-list">
+								{myFeeds.feeds.map((feed) => (
+									<FeedCard
+										feed={feed}
+										key={feed.id}
+									/>
+								))}
+							</div>
+							{myFeeds.hasMore && (
+								<p className="profile-joined">
+									최근 {MY_FEED_PREVIEW}개만 보여주고 있어요. <Link href="/feeds">전체 피드 보기</Link>
+								</p>
+							)}
+						</>
+					) : (
+						<div className="feed-empty">
+							<NotebookPen size={26} />
+							<strong>아직 쓴 피드가 없어요</strong>
+							<p>빌린 책을 읽고 첫 이야기를 남겨보세요.</p>
+							<Link href="/feeds/new">피드 쓰기</Link>
+						</div>
+					)}
+				</section>
 			</div>
 		</main>
 	);

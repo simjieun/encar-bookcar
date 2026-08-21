@@ -43,6 +43,20 @@
       "when": 1786509396407,
       "tag": "0005_aberrant_yellowjacket",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787295254553,
+      "tag": "0006_flat_terror",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1787297882518,
+      "tag": "0007_colossal_snowbird",
+      "breakpoints": true
     }
   ]
 }
