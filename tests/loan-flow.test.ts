@@ -71,11 +71,10 @@ afterAll(async () => {
 });
 
 describe('현재 대여자와 선입선출 예약', () => {
-	it('등록자는 자동 대여자가 아니며 본인 대여 요청은 차단한다', async () => {
-		const { bookId } = await createBook('등록자 분리');
-		await expect(loanData.requestLoan(bookId, ownerId)).rejects.toMatchObject({
-			code: 'OWN_BOOK',
-		});
+	it('등록자도 대여자가 아니면 예약 순서에 참여할 수 있다', async () => {
+		const { bookId } = await createBook('등록자 예약', true);
+		const loan = await loanData.requestLoan(bookId, ownerId);
+		expect(loan).toMatchObject({ status: 'REQUESTED', queuePosition: 1 });
 	});
 
 	it('대여 가능한 책은 요청 즉시 현재 대여자가 된다', async () => {
@@ -121,24 +120,35 @@ describe('현재 대여자와 선입선출 예약', () => {
 		expect(context.viewerReservation?.queuePosition).toBe(1);
 	});
 
-	it('등록자가 예약 순서를 건너뛰어 대여자를 변경하지 못하게 한다', async () => {
+	it('현재 대여자가 예약 순서를 건너뛰어 대여자를 변경하지 못하게 한다', async () => {
 		const { bookId } = await createBook('순서 강제', true);
 		await loanData.requestLoan(bookId, borrowerBId);
 		await loanData.requestLoan(bookId, borrowerCId);
 		await expect(
-			loanData.changeBookBorrower(bookId, ownerId, {
+			loanData.changeBookBorrower(bookId, borrowerAId, {
 				borrowerId: borrowerCId,
 				borrowerName: '대여자 C',
 				makeAvailable: false,
 			}),
 		).rejects.toMatchObject({ code: 'FIFO_REQUIRED' });
 		await expect(
-			loanData.changeBookBorrower(bookId, ownerId, {
+			loanData.changeBookBorrower(bookId, borrowerAId, {
 				borrowerId: borrowerBId,
 				borrowerName: '대여자 B',
 				makeAvailable: false,
 			}),
 		).resolves.toMatchObject({ currentBorrowerName: '대여자 B' });
+	});
+
+	it('대여자가 아닌 등록자는 대여자를 바꿀 수 없다', async () => {
+		const { bookId } = await createBook('대여자만 변경', true);
+		await expect(
+			loanData.changeBookBorrower(bookId, ownerId, {
+				borrowerId: borrowerBId,
+				borrowerName: '대여자 B',
+				makeAvailable: false,
+			}),
+		).rejects.toMatchObject({ code: 'BORROWER_ONLY' });
 	});
 
 	it('예약 취소 후 뒤 예약자의 순번을 당긴다', async () => {
@@ -153,7 +163,7 @@ describe('현재 대여자와 선입선출 예약', () => {
 
 	it('예약이 없으면 이름 직접 입력으로 대여자를 다시 바꿀 수 있다', async () => {
 		const { bookId } = await createBook('직접 대여자 변경', true);
-		await loanData.changeBookBorrower(bookId, ownerId, {
+		await loanData.changeBookBorrower(bookId, borrowerAId, {
 			borrowerId: '',
 			borrowerName: '외부 동료',
 			makeAvailable: false,

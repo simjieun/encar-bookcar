@@ -49,6 +49,78 @@ export function BookLoanPanel({
 		);
 
 	const isOwner = viewer.id === ownerId;
+	const isCurrentBorrower = currentBorrowerId === viewer.id || currentLoan?.borrowerId === viewer.id;
+	// ponytail: 대여자가 비회원(이름만 입력)이면 계정이 없어 아무도 못 넘기므로 등록자가 대신 처리한다
+	const canManageBorrower = borrowed && (currentBorrowerId ? isCurrentBorrower : isOwner);
+	const loanLabel = borrowed ? `예약하기${queue.length ? ` · ${queue.length + 1}번째` : ' · 1번째'}` : '바로 대여하기';
+
+	if (isCurrentBorrower)
+		return (
+			<section className="book-loan-panel">
+				<span className="loan-panel-icon">
+					<UserRound size={22} />
+				</span>
+				<div className="owner-loan-content">
+					<h2>현재 내가 대여 중이에요</h2>
+					<p>
+						{currentLoan?.status === 'RETURN_REQUESTED'
+							? '등록자가 책을 확인하면 다음 순서로 넘어가요.'
+							: '다 읽었다면 반납을 요청하거나, 다음 동료에게 바로 넘겨주세요.'}
+					</p>
+					<div className="loan-panel-actions">
+						{currentLoan?.status === 'BORROWED' && (
+							<LoanActionButton
+								loanId={currentLoan.id}
+								action="REQUEST_RETURN"
+								label="반납 요청"
+							/>
+						)}
+						<Link
+							className="loan-panel-link subtle"
+							href="/loans"
+						>
+							내 대여 현황 <ArrowRight size={17} />
+						</Link>
+					</div>
+					{canManageBorrower && (
+						<BorrowerManager
+							bookId={bookId}
+							currentBorrowerName={currentBorrowerName}
+							queue={queue}
+						/>
+					)}
+				</div>
+			</section>
+		);
+
+	if (viewerReservation)
+		return (
+			<section className="book-loan-panel">
+				<span className="loan-panel-icon">
+					<ListOrdered size={22} />
+				</span>
+				<div>
+					<h2>예약 {viewerReservation.queuePosition}번째예요</h2>
+					<p>앞선 대여가 끝나면 순서대로 자동 연결돼요.</p>
+				</div>
+				<div className="loan-panel-actions">
+					<LoanActionButton
+						loanId={viewerReservation.id}
+						action="CANCEL"
+						label="예약 취소"
+						tone="secondary"
+						confirmMessage="예약을 취소할까요?"
+					/>
+					<Link
+						className="loan-panel-link subtle"
+						href="/loans"
+					>
+						내 대여 현황 <ArrowRight size={17} />
+					</Link>
+				</div>
+			</section>
+		);
+
 	if (isOwner)
 		return (
 			<section className="book-loan-panel owner-loan-panel">
@@ -83,71 +155,19 @@ export function BookLoanPanel({
 							confirmMessage="책을 돌려받았나요? 예약자가 있으면 첫 번째 동료에게 자동으로 넘어가요."
 						/>
 					)}
-					<BorrowerManager
-						bookId={bookId}
-						currentBorrowerName={currentBorrowerName}
-						queue={queue}
-					/>
-				</div>
-			</section>
-		);
-
-	if (currentBorrowerId === viewer.id || currentLoan?.borrowerId === viewer.id)
-		return (
-			<section className="book-loan-panel">
-				<span className="loan-panel-icon">
-					<UserRound size={22} />
-				</span>
-				<div>
-					<h2>현재 내가 대여 중이에요</h2>
-					<p>
-						{currentLoan?.status === 'RETURN_REQUESTED'
-							? '등록자가 책을 확인하면 다음 순서로 넘어가요.'
-							: '다 읽었다면 반납을 요청해 주세요.'}
-					</p>
-				</div>
-				<div className="loan-panel-actions">
-					{currentLoan?.status === 'BORROWED' && (
-						<LoanActionButton
-							loanId={currentLoan.id}
-							action="REQUEST_RETURN"
-							label="반납 요청"
+					{canManageBorrower && (
+						<BorrowerManager
+							bookId={bookId}
+							currentBorrowerName={currentBorrowerName}
+							queue={queue}
 						/>
 					)}
-					<Link
-						className="loan-panel-link subtle"
-						href="/loans"
-					>
-						내 대여 현황 <ArrowRight size={17} />
-					</Link>
-				</div>
-			</section>
-		);
-
-	if (viewerReservation)
-		return (
-			<section className="book-loan-panel">
-				<span className="loan-panel-icon">
-					<ListOrdered size={22} />
-				</span>
-				<div>
-					<h2>예약 {viewerReservation.queuePosition}번째예요</h2>
-					<p>앞선 대여가 끝나면 순서대로 자동 연결돼요.</p>
-				</div>
-				<div className="loan-panel-actions">
-					<LoanActionButton
-						loanId={viewerReservation.id}
-						action="CANCEL"
-						label="예약 취소"
-						tone="secondary"
-						confirmMessage="예약을 취소할까요?"
-					/>
-					<Link
-						className="loan-panel-link subtle"
-						href="/loans"
-					>
-						내 대여 현황 <ArrowRight size={17} />
-					</Link>
+					{bookStatus !== 'UNAVAILABLE' && (
+						<LoanActionButton
+							bookId={bookId}
+							label={loanLabel}
+						/>
+					)}
 				</div>
 			</section>
 		);
@@ -180,7 +200,7 @@ export function BookLoanPanel({
 			</div>
 			<LoanActionButton
 				bookId={bookId}
-				label={borrowed ? `예약하기${queue.length ? ` · ${queue.length + 1}번째` : ' · 1번째'}` : '바로 대여하기'}
+				label={loanLabel}
 			/>
 		</section>
 	);

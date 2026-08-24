@@ -131,7 +131,6 @@ export async function requestLoan(bookId: string, borrowerId: string) {
 				.limit(1);
 			const [member] = await tx.select({ name: user.name }).from(user).where(eq(user.id, borrowerId)).limit(1);
 			if (!book || !member) throw new LoanError('책을 찾을 수 없어요.', 404, 'BOOK_NOT_FOUND');
-			if (book.ownerId === borrowerId) throw new LoanError('내가 등록한 책은 직접 대여자로 지정해 주세요.', 400, 'OWN_BOOK');
 			if (book.currentBorrowerId === borrowerId) throw new LoanError('이미 이 책을 대여 중이에요.', 409, 'ALREADY_BORROWING');
 			if (book.status === 'UNAVAILABLE') throw new LoanError('지금은 빌릴 수 없는 책이에요.', 409, 'BOOK_UNAVAILABLE');
 			const now = new Date();
@@ -291,7 +290,7 @@ export async function transitionLoan(loanId: string, action: LoanAction, userId:
 
 export async function changeBookBorrower(
 	bookId: string,
-	ownerId: string,
+	userId: string,
 	input: { borrowerId: string; borrowerName: string; makeAvailable: boolean },
 ) {
 	await ensureDatabase();
@@ -306,7 +305,9 @@ export async function changeBookBorrower(
 				.where(eq(books.id, bookId))
 				.limit(1);
 			if (!book) throw new LoanError('책을 찾을 수 없어요.', 404, 'BOOK_NOT_FOUND');
-			if (book.ownerId !== ownerId) throw new LoanError('책 등록자만 대여자를 바꿀 수 있어요.', 403, 'OWNER_ONLY');
+			// ponytail: 대여자가 비회원(이름만 입력)이면 계정이 없어 아무도 못 넘기므로 등록자가 대신 처리한다
+			const allowed = book.currentBorrowerId ? book.currentBorrowerId === userId : book.ownerId === userId;
+			if (!allowed) throw new LoanError('현재 대여자만 대여자를 바꿀 수 있어요.', 403, 'BORROWER_ONLY');
 			const [first] = await tx
 				.select({
 					id: loans.id,
