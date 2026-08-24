@@ -36,6 +36,10 @@ export function MemberPicker({
 					<input
 						value={name}
 						onChange={(event) => onChange(event.target.value, '')}
+						onKeyDown={(event) => {
+							// ponytail: 폼 안에서 쓰일 때 Enter가 상위 폼을 제출하는 것만 막는다
+							if (event.key === 'Enter') event.preventDefault();
+						}}
 						placeholder="이름 또는 이메일로 찾아보세요"
 						autoComplete="off"
 					/>
