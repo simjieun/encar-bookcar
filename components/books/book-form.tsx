@@ -49,6 +49,7 @@ export function BookForm({ initialValue, bookId }: { initialValue?: BookInput; b
 	const {
 		register,
 		reset,
+		getValues,
 		handleSubmit,
 		control,
 		setValue,
@@ -70,12 +71,8 @@ export function BookForm({ initialValue, bookId }: { initialValue?: BookInput; b
 	});
 
 	function selectBook(book: KakaoBook) {
-		reset({
-			...emptyBook,
-			...book,
-			location: values.location ?? '',
-			status: values.status ?? 'AVAILABLE',
-		});
+		// 카카오 응답에는 보관 장소·상태·대여자 키가 없어 현재 값 위에 도서 정보만 덮인다
+		reset({ ...getValues(), ...book });
 		setSelected(true);
 		setServerError(null);
 		window.setTimeout(() => document.getElementById('book-details')?.scrollIntoView({ behavior: 'smooth' }), 50);
@@ -83,7 +80,11 @@ export function BookForm({ initialValue, bookId }: { initialValue?: BookInput; b
 
 	return (
 		<div className="book-form-flow">
-			{!bookId && <KakaoBookSearch onSelect={selectBook} />}
+			<KakaoBookSearch
+				onSelect={selectBook}
+				defaultQuery={initialValue?.title}
+				heading={bookId ? '책 정보를 다시 가져올까요?' : '어떤 책을 등록할까요?'}
+			/>
 			<form
 				id="book-details"
 				className="book-details-form"
@@ -91,7 +92,7 @@ export function BookForm({ initialValue, bookId }: { initialValue?: BookInput; b
 				noValidate
 			>
 				<div className="form-section-heading">
-					<span>{bookId ? '1' : '2'}</span>
+					<span>2</span>
 					<div>
 						<h2>{bookId ? '책 정보를 수정해요' : '책 정보를 확인해요'}</h2>
 						<p>필요한 내용을 다듬고 보관 장소를 알려주세요.</p>
