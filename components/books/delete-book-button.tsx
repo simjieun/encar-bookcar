@@ -4,7 +4,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-export function DeleteBookButton({ bookId }: { bookId: string }) {
+export function DeleteBookButton({
+	bookId,
+	confirmMessage = '이 책을 정말 삭제할까요?',
+}: {
+	bookId: string;
+	confirmMessage?: string;
+}) {
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const mutation = useMutation({
@@ -31,7 +37,7 @@ export function DeleteBookButton({ bookId }: { bookId: string }) {
 				type="button"
 				disabled={mutation.isPending}
 				onClick={() => {
-					if (window.confirm('이 책을 정말 삭제할까요?')) mutation.mutate();
+					if (window.confirm(confirmMessage)) mutation.mutate();
 				}}
 			>
 				<Trash2 size={17} />

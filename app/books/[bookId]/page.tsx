@@ -24,6 +24,7 @@ export default async function BookDetailPage({ params }: { params: Promise<{ boo
 	const parsedStatus = bookStatusSchema.safeParse(book.status);
 	if (!parsedStatus.success) notFound();
 	const isOwner = session?.user.id === book.ownerId;
+	const isAdmin = session?.user.role === 'admin';
 	const published = book.publishedAt?.replace(/^(\d{4})(\d{2})(\d{2})$/, '$1.$2.$3');
 
 	return (
@@ -112,13 +113,16 @@ export default async function BookDetailPage({ params }: { params: Promise<{ boo
 							</a>
 						)}
 						{isOwner && (
-							<>
-								<Link href={`/books/${book.id}/edit`}>
-									<Pencil size={16} />
-									수정
-								</Link>
-								<DeleteBookButton bookId={book.id} />
-							</>
+							<Link href={`/books/${book.id}/edit`}>
+								<Pencil size={16} />
+								수정
+							</Link>
+						)}
+						{(isOwner || isAdmin) && (
+							<DeleteBookButton
+								bookId={book.id}
+								confirmMessage={isAdmin ? '관리자 권한으로 이 책과 대여 기록을 모두 삭제할까요?' : undefined}
+							/>
 						)}
 					</div>
 				</div>
