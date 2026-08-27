@@ -38,7 +38,7 @@ export default async function EditBookPage({ params }: { params: Promise<{ bookI
 			<section className="book-form-hero compact">
 				<p>EDIT BOOK</p>
 				<h1>책 정보를 수정해요</h1>
-				<span>대여 상태와 보관 장소도 최신 정보로 바꿔주세요.</span>
+				<span>제목으로 다시 검색하면 표지와 도서 정보를 새로 가져올 수 있어요.</span>
 			</section>
 			<BookForm
 				initialValue={initialValue}

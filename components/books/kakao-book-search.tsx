@@ -17,8 +17,17 @@ async function searchKakaoBooks(query: string) {
 	return payload;
 }
 
-export function KakaoBookSearch({ onSelect }: { onSelect: (book: KakaoBook) => void }) {
-	const [input, setInput] = useState('');
+export function KakaoBookSearch({
+	onSelect,
+	defaultQuery = '',
+	heading = '어떤 책을 등록할까요?',
+}: {
+	onSelect: (book: KakaoBook) => void;
+	defaultQuery?: string;
+	heading?: string;
+}) {
+	const [input, setInput] = useState(defaultQuery);
+	// ponytail: query는 빈 값으로 시작 → enabled:false라 진입만으로는 카카오를 호출하지 않는다
 	const [query, setQuery] = useState('');
 	const result = useQuery({
 		queryKey: ['kakao-books', query],
@@ -41,7 +50,7 @@ export function KakaoBookSearch({ onSelect }: { onSelect: (book: KakaoBook) => v
 			<div className="form-section-heading">
 				<span>1</span>
 				<div>
-					<h2 id="kakao-search-heading">어떤 책을 등록할까요?</h2>
+					<h2 id="kakao-search-heading">{heading}</h2>
 					<p>카카오 책 검색에서 표지와 도서 정보를 가져와요.</p>
 				</div>
 			</div>

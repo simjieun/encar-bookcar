@@ -114,6 +114,11 @@ async function requireAuthor(feedId: string, userId: string) {
 	if (feed.authorId !== userId) throw new FeedError('작성자만 수정하거나 삭제할 수 있어요.', 403);
 }
 
+export async function hasBookFeed(bookId: string) {
+	await ensureDatabase();
+	return (await getDb().select({ id: feeds.id }).from(feeds).where(eq(feeds.bookId, bookId)).limit(1)).length > 0;
+}
+
 export async function createFeed(input: FeedInput, authorId: string) {
 	await ensureDatabase();
 	await requireReadBook(authorId, input.bookId);
