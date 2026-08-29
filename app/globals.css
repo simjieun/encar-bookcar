@@ -1038,6 +1038,9 @@ button:disabled {
 	margin: 0 auto;
 	padding: 76px 0 58px;
 }
+.books-page-hero {
+	padding: 48px 0 36px;
+}
 .books-page-hero > p,
 .book-form-hero > p {
 	margin: 0 0 12px;
@@ -1088,7 +1091,13 @@ button:disabled {
 }
 .catalog-filters {
 	display: flex;
+	align-items: center;
 	gap: 8px;
+}
+.catalog-filters .primary-button {
+	min-height: 48px;
+	padding-inline: 18px;
+	font-size: 13px;
 }
 .catalog-filters select {
 	min-height: 48px;
@@ -1593,6 +1602,10 @@ button:disabled {
 		width: calc(100% - 32px);
 		padding-top: 48px;
 	}
+	.books-page-hero {
+		padding-top: 32px;
+		padding-bottom: 24px;
+	}
 	.books-catalog-section,
 	.book-form-flow {
 		width: calc(100% - 32px);
@@ -1604,9 +1617,16 @@ button:disabled {
 	.book-search {
 		width: 100%;
 	}
+	.catalog-filters {
+		flex-wrap: wrap;
+	}
 	.catalog-filters select {
 		min-width: 0;
 		flex: 1;
+	}
+	.catalog-filters .primary-button {
+		width: 100%;
+		justify-content: center;
 	}
 	.kakao-search-panel,
 	.book-details-form {

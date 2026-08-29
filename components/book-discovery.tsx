@@ -5,7 +5,7 @@ export function BookDiscovery() {
 	return (
 		<section
 			id="books"
-			className="bg-surface py-24 md:py-32"
+			className="bg-surface pt-12 pb-24 md:pt-16 md:pb-32"
 		>
 			<div className="site-container">
 				<div className="section-heading-row">

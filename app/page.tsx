@@ -29,7 +29,7 @@ export default async function Home() {
 					className="hero-glow hero-glow-right"
 					aria-hidden="true"
 				/>
-				<div className="site-container relative z-10 grid items-center gap-14 py-20 md:min-h-[690px] md:grid-cols-[1.08fr_0.92fr] md:py-24">
+				<div className="site-container relative z-10 grid items-center gap-14 py-20 md:min-h-[600px] md:grid-cols-[1.08fr_0.92fr] md:py-20">
 					<div className="max-w-[720px]">
 						<div className="eyebrow">
 							<Sparkles
@@ -139,19 +139,18 @@ export default async function Home() {
 						/>
 					</div>
 				</div>
-			</section>
-
-			<section className="site-container -mt-1 pb-24 md:pb-32">
-				<div className="stats-panel">
-					{bookStats.map((stat) => (
-						<div
-							className="stat-item"
-							key={stat.label}
-						>
-							<strong>{stat.value}</strong>
-							<span>{stat.label}</span>
-						</div>
-					))}
+				<div className="site-container relative z-20 -translate-y-6">
+					<div className="stats-panel">
+						{bookStats.map((stat) => (
+							<div
+								className="stat-item"
+								key={stat.label}
+							>
+								<strong>{stat.value}</strong>
+								<span>{stat.label}</span>
+							</div>
+						))}
+					</div>
 				</div>
 			</section>
 

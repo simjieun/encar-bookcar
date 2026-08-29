@@ -1,7 +1,7 @@
 'use client';
 
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { LoaderCircle, Search, X } from 'lucide-react';
+import { LoaderCircle, Plus, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
 import type { BookView } from '@/lib/types/book';
@@ -98,6 +98,16 @@ export function BookCatalog({ compact = false }: { compact?: boolean }) {
 							<option value="latest">최근 등록순</option>
 							<option value="oldest">오래된 순</option>
 						</select>
+						<Link
+							className="primary-button"
+							href="/books/new"
+						>
+							<Plus
+								size={17}
+								aria-hidden="true"
+							/>
+							책 등록하기
+						</Link>
 					</div>
 				)}
 			</div>

@@ -24,6 +24,7 @@ export function LoginForm() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const [serverError, setServerError] = useState<string | null>(null);
+	const [isRedirecting, setIsRedirecting] = useState(false);
 	const {
 		register,
 		handleSubmit,
@@ -46,6 +47,7 @@ export function LoginForm() {
 			return;
 		}
 
+		setIsRedirecting(true);
 		router.replace(getSafeReturnTo(searchParams.get('returnTo')));
 		router.refresh();
 	});
@@ -93,9 +95,9 @@ export function LoginForm() {
 			<button
 				className="auth-submit"
 				type="submit"
-				disabled={isSubmitting}
+				disabled={isSubmitting || isRedirecting}
 			>
-				{isSubmitting ? (
+				{isSubmitting || isRedirecting ? (
 					<>
 						<LoaderCircle
 							className="animate-spin"
