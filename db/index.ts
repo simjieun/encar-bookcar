@@ -39,14 +39,22 @@ export function getDb() {
 // ponytail: 런타임 마이그레이션. drizzle migrator는 멱등이고 globalThis에 캐시되지만
 // 인스턴스 여러 개가 동시에 콜드 스타트하면 경합할 수 있다. 문제가 되면 배포 파이프라인에서
 // `npm run db:migrate`를 돌리고 이 함수를 no-op으로 바꾼다.
+// Supabase 트랜잭션 풀러(pgbouncer)는 DDL을 지원하지 않으므로
+// 마이그레이션은 반드시 DIRECT_URL(direct 연결, 5432)을 사용한다.
 export async function ensureDatabase() {
 	if (!databaseState.encarBookcarFifoMigration) {
-		databaseState.encarBookcarFifoMigration = migrate(getDb(), {
+		const directUrl = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+		const migrationClient = postgres(directUrl ?? 'postgres://localhost:5432/encar_bookcar');
+		const migrationDb = drizzle(migrationClient, { schema });
+
+		databaseState.encarBookcarFifoMigration = migrate(migrationDb, {
 			migrationsFolder: path.join(process.cwd(), 'drizzle'),
-		}).catch((error) => {
-			databaseState.encarBookcarFifoMigration = undefined;
-			throw error;
-		});
+		})
+			.finally(() => migrationClient.end())
+			.catch((error) => {
+				databaseState.encarBookcarFifoMigration = undefined;
+				throw error;
+			});
 	}
 
 	await databaseState.encarBookcarFifoMigration;
