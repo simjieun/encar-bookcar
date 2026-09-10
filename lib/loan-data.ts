@@ -4,6 +4,7 @@ import { and, asc, desc, eq, inArray, or, type SQL } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { ensureDatabase, getDb } from '@/db';
 import { books, loans, user } from '@/db/schema';
+import { findMemberIdByExactName } from '@/lib/member-data';
 import { ACTIVE_LOAN_STATUSES, loanStatusSchema, type LoanAction, type LoanStatus } from '@/lib/schemas/loan';
 import type { LoanView } from '@/lib/types/loan';
 
@@ -308,6 +309,7 @@ export async function changeBookBorrower(
 			// ponytail: 대여자가 비회원(이름만 입력)이면 계정이 없어 아무도 못 넘기므로 등록자가 대신 처리한다
 			const allowed = book.currentBorrowerId ? book.currentBorrowerId === userId : book.ownerId === userId;
 			if (!allowed) throw new LoanError('현재 대여자만 대여자를 바꿀 수 있어요.', 403, 'BORROWER_ONLY');
+			if (!input.borrowerId && input.borrowerName) input = { ...input, borrowerId: await findMemberIdByExactName(input.borrowerName) };
 			const [first] = await tx
 				.select({
 					id: loans.id,

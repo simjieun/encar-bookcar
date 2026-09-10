@@ -3,6 +3,7 @@ import { getDb } from '@/db';
 import { books, loans, user } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { listBooks, toBookRecord } from '@/lib/book-data';
+import { findMemberIdByExactName } from '@/lib/member-data';
 import { bookListQuerySchema, bookSchema } from '@/lib/schemas/book';
 import { getRequestSession } from '@/lib/request-session';
 
@@ -33,6 +34,11 @@ export async function POST(request: Request) {
 			},
 			{ status: 400 },
 		);
+	}
+
+	// 검색 결과를 누르지 않고 이름만 입력해도 회원이면 연결해야 loans 행이 생겨 대여 현황에 보인다
+	if (parsed.data.status === 'BORROWED' && !parsed.data.currentBorrowerId && parsed.data.currentBorrowerName) {
+		parsed.data.currentBorrowerId = await findMemberIdByExactName(parsed.data.currentBorrowerName);
 	}
 
 	// ponytail: 등록자 본인도 대여자로 지정 가능 (책을 직접 들고 있는 경우)
