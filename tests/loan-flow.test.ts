@@ -185,4 +185,17 @@ describe('현재 대여자와 선입선출 예약', () => {
 			currentBorrowerName: null,
 		});
 	});
+
+	it('이름만 입력해도 같은 이름의 회원이 1명이면 그 회원을 대여자로 연결한다', async () => {
+		const { bookId } = await createBook('이름으로 회원 연결', true);
+		await loanData.changeBookBorrower(bookId, borrowerAId, {
+			borrowerId: '',
+			borrowerName: '대여자 B',
+			makeAvailable: false,
+		});
+		const [book] = await db.select().from(schema.books).where(eq(schema.books.id, bookId));
+		expect(book.currentBorrowerId).toBe(borrowerBId);
+		const { borrowed } = await loanData.listLoansForUser(borrowerBId);
+		expect(borrowed).toContainEqual(expect.objectContaining({ bookId, status: 'BORROWED' }));
+	});
 });
