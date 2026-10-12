@@ -21,7 +21,7 @@ export default async function FeedDetailPage({ params }: { params: Promise<{ fee
 	if (!z.uuid().safeParse(feedId).success) notFound();
 	const [feed, session] = await Promise.all([getFeed(feedId).catch(() => null), getCurrentSession()]);
 	if (!feed) notFound();
-	const comments = await listFeedComments(feedId);
+	const comments = await listFeedComments(feedId, session?.user.id ?? null);
 	const isAuthor = session?.user.id === feed.authorId;
 
 	return (

@@ -3385,6 +3385,43 @@ button:disabled {
 	background: #fff0f2;
 }
 
+/* 댓글 이모지 반응 */
+.feed-comment-actions .feed-reaction {
+	color: var(--body);
+	background: white;
+	border: 1px solid var(--border);
+}
+.feed-comment-actions .feed-reaction.is-active {
+	color: var(--brand);
+	background: color-mix(in srgb, var(--brand) 8%, white);
+	border-color: var(--brand);
+}
+.feed-comment-actions .feed-reaction:disabled {
+	cursor: default;
+}
+.feed-reaction-picker {
+	display: inline-flex;
+	flex-wrap: wrap;
+	max-width: 100%;
+	gap: 2px;
+	margin-top: 6px;
+	padding: 4px;
+	background: white;
+	border: 1px solid var(--border);
+	border-radius: 12px;
+}
+.feed-reaction-picker button {
+	padding: 4px 7px;
+	font-size: 18px;
+	line-height: 1;
+	background: none;
+	border: 0;
+	border-radius: 8px;
+}
+.feed-reaction-picker button:hover {
+	background: var(--surface);
+}
+
 /* 대댓글 — 중첩은 1단계까지라 세로선 하나로 충분하다. */
 .feed-reply-list {
 	display: grid;

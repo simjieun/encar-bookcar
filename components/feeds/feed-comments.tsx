@@ -1,11 +1,11 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import { CornerDownRight, LoaderCircle, MessageCircle, Trash2 } from 'lucide-react';
+import { CornerDownRight, LoaderCircle, MessageCircle, SmilePlus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { feedCommentSchema } from '@/lib/schemas/feed';
+import { FEED_REACTIONS, feedCommentSchema } from '@/lib/schemas/feed';
 import type { FeedCommentThread, FeedCommentView } from '@/lib/types/feed';
 
 const dateFormat = new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -15,6 +15,8 @@ export function FeedComments({ feedId, comments, viewerId }: { feedId: string; c
 	const [error, setError] = useState<string | null>(null);
 	// 답글 폼은 한 번에 하나만 열어둔다.
 	const [replyTo, setReplyTo] = useState<string | null>(null);
+	// 이모지 선택지도 한 번에 하나만 연다.
+	const [pickerFor, setPickerFor] = useState<string | null>(null);
 	const total = comments.reduce((sum, thread) => sum + 1 + thread.replies.length, 0);
 
 	const create = useMutation({
@@ -49,6 +51,26 @@ export function FeedComments({ feedId, comments, viewerId }: { feedId: string; c
 		onError: (mutationError) => setError(mutationError.message),
 	});
 
+	const react = useMutation({
+		mutationFn: async ({ commentId, emoji }: { commentId: string; emoji: string }) => {
+			const response = await fetch(`/api/feeds/${feedId}/comments/${commentId}/reactions`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ emoji }),
+			});
+			if (!response.ok) {
+				const payload = (await response.json().catch(() => ({}))) as { message?: string };
+				throw new Error(payload.message ?? '반응을 남기지 못했어요.');
+			}
+		},
+		onSuccess: () => {
+			setError(null);
+			setPickerFor(null);
+			router.refresh();
+		},
+		onError: (mutationError) => setError(mutationError.message),
+	});
+
 	function submit(content: string, parentId: string) {
 		const parsed = feedCommentSchema.safeParse({ content, parentId });
 		if (!parsed.success) {
@@ -75,6 +97,29 @@ export function FeedComments({ feedId, comments, viewerId }: { feedId: string; c
 				</div>
 				<p>{comment.content}</p>
 				<div className="feed-comment-actions">
+					{comment.reactions.map((reaction) => (
+						<button
+							key={reaction.emoji}
+							type="button"
+							className={reaction.reacted ? 'feed-reaction is-active' : 'feed-reaction'}
+							aria-pressed={reaction.reacted}
+							aria-label={`${reaction.emoji} ${reaction.count}명${reaction.reacted ? ', 내 반응 취소' : ''}`}
+							disabled={!viewerId || react.isPending}
+							onClick={() => react.mutate({ commentId: comment.id, emoji: reaction.emoji })}
+						>
+							{reaction.emoji} {reaction.count}
+						</button>
+					))}
+					{viewerId && (
+						<button
+							type="button"
+							aria-label="이모지 반응 남기기"
+							aria-expanded={pickerFor === comment.id}
+							onClick={() => setPickerFor(pickerFor === comment.id ? null : comment.id)}
+						>
+							<SmilePlus size={14} />
+						</button>
+					)}
 					{/* 대댓글에는 답글 버튼을 두지 않는다 — 중첩은 1단계까지다. */}
 					{viewerId && !isReply && (
 						<button
@@ -101,6 +146,24 @@ export function FeedComments({ feedId, comments, viewerId }: { feedId: string; c
 						</button>
 					)}
 				</div>
+				{pickerFor === comment.id && (
+					<div
+						className="feed-reaction-picker"
+						role="group"
+						aria-label="이모지 선택"
+					>
+						{FEED_REACTIONS.map((emoji) => (
+							<button
+								key={emoji}
+								type="button"
+								disabled={react.isPending}
+								onClick={() => react.mutate({ commentId: comment.id, emoji })}
+							>
+								{emoji}
+							</button>
+						))}
+					</div>
+				)}
 			</>
 		);
 	}

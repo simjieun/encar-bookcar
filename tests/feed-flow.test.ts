@@ -139,6 +139,38 @@ describe('피드 댓글', () => {
 		});
 	});
 
+	it('댓글에 이모지 반응을 달고 다시 누르면 취소된다', async () => {
+		const bookId = await createBook('반응 달릴 책', 'BORROWED');
+		const feed = await feedData.createFeed({ bookId, title: '반응 테스트', content: '내용' }, readerId);
+		const parent = await feedData.createFeedComment(feed.id, { content: '부모' }, outsiderId);
+		const reply = await feedData.createFeedComment(feed.id, { content: '답글', parentId: parent.id }, readerId);
+
+		await feedData.toggleFeedCommentReaction(feed.id, parent.id, '🎉', readerId);
+		await feedData.toggleFeedCommentReaction(feed.id, parent.id, '👍', readerId);
+		await feedData.toggleFeedCommentReaction(feed.id, parent.id, '👍', outsiderId);
+		await feedData.toggleFeedCommentReaction(feed.id, reply.id, '❤️', outsiderId);
+
+		const [thread] = await feedData.listFeedComments(feed.id, readerId);
+		// 선택지 순서(👍 → 🎉)대로 정렬된다.
+		expect(thread.reactions).toEqual([
+			{ emoji: '👍', count: 2, reacted: true },
+			{ emoji: '🎉', count: 1, reacted: true },
+		]);
+		expect(thread.replies[0].reactions).toEqual([{ emoji: '❤️', count: 1, reacted: false }]);
+
+		expect(await feedData.toggleFeedCommentReaction(feed.id, parent.id, '👍', readerId)).toEqual({ reacted: false });
+		const [afterToggle] = await feedData.listFeedComments(feed.id, readerId);
+		expect(afterToggle.reactions[0]).toEqual({ emoji: '👍', count: 1, reacted: false });
+	});
+
+	it('다른 피드의 댓글에는 반응할 수 없다', async () => {
+		const [bookA, bookB] = await Promise.all([createBook('반응 피드 A의 책', 'BORROWED'), createBook('반응 피드 B의 책', 'BORROWED')]);
+		const feedA = await feedData.createFeed({ bookId: bookA, title: 'A', content: '내용' }, readerId);
+		const feedB = await feedData.createFeed({ bookId: bookB, title: 'B', content: '내용' }, readerId);
+		const commentOnA = await feedData.createFeedComment(feedA.id, { content: 'A의 댓글' }, outsiderId);
+		await expect(feedData.toggleFeedCommentReaction(feedB.id, commentOnA.id, '👍', readerId)).rejects.toMatchObject({ status: 404 });
+	});
+
 	it('최상위 댓글을 지우면 대댓글도 함께 사라진다', async () => {
 		const bookId = await createBook('대댓글 연쇄 삭제용 책', 'BORROWED');
 		const feed = await feedData.createFeed({ bookId, title: '연쇄 삭제', content: '내용' }, readerId);
