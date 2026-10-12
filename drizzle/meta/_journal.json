@@ -57,6 +57,13 @@
       "when": 1787297882518,
       "tag": "0007_colossal_snowbird",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791791814667,
+      "tag": "0008_late_epoch",
+      "breakpoints": true
     }
   ]
 }

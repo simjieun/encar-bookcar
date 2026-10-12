@@ -21,5 +21,13 @@ export const feedCommentSchema = z.object({
 		.default(''),
 });
 
+/** 댓글에 달 수 있는 이모지. 순서대로 선택지에 보인다. */
+export const FEED_REACTIONS = ['👍', '❤️', '😍', '😂', '😮', '😢', '🎉', '📚', '🙏', '💡', '👏', '🔥', '🤔'] as const;
+
+export const feedReactionSchema = z.object({
+	emoji: z.enum(FEED_REACTIONS, '달 수 없는 이모지예요.'),
+});
+
 export type FeedInput = z.infer<typeof feedSchema>;
 export type FeedCommentInput = z.infer<typeof feedCommentSchema>;
+export type FeedReaction = (typeof FEED_REACTIONS)[number];

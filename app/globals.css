@@ -923,7 +923,8 @@ button:disabled {
 	align-items: center;
 	gap: 8px;
 }
-.app-header nav a {
+.app-header nav a,
+.app-header nav .profile-logout {
 	min-height: 44px;
 	display: inline-flex;
 	align-items: center;
@@ -934,7 +935,13 @@ button:disabled {
 	font-weight: 750;
 	border-radius: 13px;
 }
-.app-header nav a:hover {
+.app-header nav .profile-logout {
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+}
+.app-header nav a:hover,
+.app-header nav .profile-logout:hover {
 	background: var(--surface);
 	color: var(--strong);
 }
@@ -945,52 +952,6 @@ button:disabled {
 .app-header .app-header-account:hover {
 	color: white;
 	background: var(--brand-dark);
-}
-
-.app-header-menu {
-	position: relative;
-}
-.app-header-menu > .app-header-account {
-	gap: 4px;
-}
-.app-header-dropdown {
-	position: absolute;
-	top: 100%;
-	right: 0;
-	z-index: 40;
-	display: none;
-	min-width: 196px;
-	flex-direction: column;
-	gap: 2px;
-	/* 위쪽 패딩이 트리거와 카드 사이의 호버 공백을 메운다. */
-	padding: 12px 8px 8px;
-}
-.app-header-menu:hover .app-header-dropdown,
-.app-header-menu:focus-within .app-header-dropdown {
-	display: flex;
-}
-.app-header-dropdown::before {
-	position: absolute;
-	inset: 10px 0 0;
-	background: white;
-	border: 1px solid var(--border);
-	border-radius: 17px;
-	box-shadow: 0 18px 40px rgb(15 23 42 / 12%);
-	content: '';
-}
-.app-header nav .app-header-dropdown > * {
-	position: relative;
-	justify-content: flex-start;
-	width: 100%;
-	min-height: 42px;
-	padding: 0 12px;
-	border: 0;
-	border-radius: 12px;
-	background: transparent;
-}
-.app-header nav .app-header-dropdown > *:hover {
-	color: var(--strong);
-	background: var(--surface);
 }
 
 .books-page,
@@ -1590,6 +1551,16 @@ button:disabled {
 @media (max-width: 760px) {
 	.app-header {
 		width: calc(100% - 32px);
+		gap: 12px;
+	}
+	/* ponytail: 로그인 메뉴 6~7개는 가로 스크롤로 버틴다. 부족해지면 햄버거 메뉴로. */
+	.app-header nav {
+		min-width: 0;
+		overflow-x: auto;
+	}
+	.app-header nav > * {
+		flex: none;
+		white-space: nowrap;
 	}
 	.app-header .app-header-account {
 		max-width: 90px;
@@ -3432,6 +3403,43 @@ button:disabled {
 .feed-comment-actions .is-danger:hover {
 	color: #c43c4b;
 	background: #fff0f2;
+}
+
+/* 댓글 이모지 반응 */
+.feed-comment-actions .feed-reaction {
+	color: var(--body);
+	background: white;
+	border: 1px solid var(--border);
+}
+.feed-comment-actions .feed-reaction.is-active {
+	color: var(--brand);
+	background: color-mix(in srgb, var(--brand) 8%, white);
+	border-color: var(--brand);
+}
+.feed-comment-actions .feed-reaction:disabled {
+	cursor: default;
+}
+.feed-reaction-picker {
+	display: inline-flex;
+	flex-wrap: wrap;
+	max-width: 100%;
+	gap: 2px;
+	margin-top: 6px;
+	padding: 4px;
+	background: white;
+	border: 1px solid var(--border);
+	border-radius: 12px;
+}
+.feed-reaction-picker button {
+	padding: 4px 7px;
+	font-size: 18px;
+	line-height: 1;
+	background: none;
+	border: 0;
+	border-radius: 8px;
+}
+.feed-reaction-picker button:hover {
+	background: var(--surface);
 }
 
 /* 대댓글 — 중첩은 1단계까지라 세로선 하나로 충분하다. */

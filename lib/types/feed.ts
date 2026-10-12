@@ -21,7 +21,11 @@ export type FeedCommentView = {
 	authorName: string;
 	content: string;
 	createdAt: string | Date;
+	reactions: FeedReactionSummary[];
 };
+
+/** 댓글 하나에 달린 이모지 하나의 집계 */
+export type FeedReactionSummary = { emoji: string; count: number; reacted: boolean };
 
 /** 최상위 댓글 하나와 그 대댓글들. 중첩은 1단계까지만이다. */
 export type FeedCommentThread = FeedCommentView & { replies: FeedCommentView[] };

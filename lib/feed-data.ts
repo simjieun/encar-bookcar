@@ -2,9 +2,9 @@ import 'server-only';
 
 import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import { ensureDatabase, getDb } from '@/db';
-import { books, feedComments, feeds, loans, user } from '@/db/schema';
-import type { FeedInput } from '@/lib/schemas/feed';
-import type { FeedBookOption, FeedCommentThread, FeedCommentView, FeedView } from '@/lib/types/feed';
+import { books, feedCommentReactions, feedComments, feeds, loans, user } from '@/db/schema';
+import { FEED_REACTIONS, type FeedInput, type FeedReaction } from '@/lib/schemas/feed';
+import type { FeedBookOption, FeedCommentThread, FeedCommentView, FeedReactionSummary, FeedView } from '@/lib/types/feed';
 
 export const FEED_PAGE_SIZE = 10;
 
@@ -58,26 +58,53 @@ export async function getFeed(feedId: string) {
 }
 
 /** 최상위 댓글 아래에 대댓글을 묶어 돌려준다. 중첩이 1단계뿐이라 한 번 조회하고 메모리에서 묶는다. */
-export async function listFeedComments(feedId: string): Promise<FeedCommentThread[]> {
+export async function listFeedComments(feedId: string, viewerId: string | null = null): Promise<FeedCommentThread[]> {
 	await ensureDatabase();
-	const rows = (await getDb()
-		.select({
-			id: feedComments.id,
-			feedId: feedComments.feedId,
-			parentId: feedComments.parentId,
-			authorId: feedComments.authorId,
-			authorName: user.name,
-			content: feedComments.content,
-			createdAt: feedComments.createdAt,
-		})
-		.from(feedComments)
-		.innerJoin(user, eq(feedComments.authorId, user.id))
-		.where(eq(feedComments.feedId, feedId))
-		.orderBy(asc(feedComments.createdAt))) as FeedCommentView[];
+	const db = getDb();
+	const [rows, reactionRows] = await Promise.all([
+		db
+			.select({
+				id: feedComments.id,
+				feedId: feedComments.feedId,
+				parentId: feedComments.parentId,
+				authorId: feedComments.authorId,
+				authorName: user.name,
+				content: feedComments.content,
+				createdAt: feedComments.createdAt,
+			})
+			.from(feedComments)
+			.innerJoin(user, eq(feedComments.authorId, user.id))
+			.where(eq(feedComments.feedId, feedId))
+			.orderBy(asc(feedComments.createdAt)),
+		db
+			.select({ commentId: feedCommentReactions.commentId, userId: feedCommentReactions.userId, emoji: feedCommentReactions.emoji })
+			.from(feedCommentReactions)
+			.innerJoin(feedComments, eq(feedCommentReactions.commentId, feedComments.id))
+			.where(eq(feedComments.feedId, feedId)),
+	]);
 
-	const threads = rows.filter((row) => !row.parentId).map((row) => ({ ...row, replies: [] as FeedCommentView[] }));
+	const reactionsByComment = new Map<string, FeedReactionSummary[]>();
+	for (const reaction of reactionRows) {
+		const list = reactionsByComment.get(reaction.commentId) ?? [];
+		let summary = list.find((item) => item.emoji === reaction.emoji);
+		if (!summary) {
+			summary = { emoji: reaction.emoji, count: 0, reacted: false };
+			list.push(summary);
+		}
+		summary.count += 1;
+		if (reaction.userId === viewerId) summary.reacted = true;
+		reactionsByComment.set(reaction.commentId, list);
+	}
+	// 이모지는 선택지 순서대로 보여준다.
+	const order = (emoji: string) => FEED_REACTIONS.indexOf(emoji as FeedReaction);
+	const comments: FeedCommentView[] = rows.map((row) => ({
+		...row,
+		reactions: (reactionsByComment.get(row.id) ?? []).sort((a, b) => order(a.emoji) - order(b.emoji)),
+	}));
+
+	const threads = comments.filter((row) => !row.parentId).map((row) => ({ ...row, replies: [] as FeedCommentView[] }));
 	const byId = new Map(threads.map((thread) => [thread.id, thread]));
-	for (const row of rows) {
+	for (const row of comments) {
 		if (row.parentId) byId.get(row.parentId)?.replies.push(row);
 	}
 	return threads;
@@ -174,4 +201,19 @@ export async function deleteFeedComment(commentId: string, userId: string) {
 	if (!comment) throw new FeedError('댓글을 찾을 수 없어요.', 404);
 	if (comment.authorId !== userId) throw new FeedError('작성자만 삭제할 수 있어요.', 403);
 	await getDb().delete(feedComments).where(eq(feedComments.id, commentId));
+}
+
+/** 같은 이모지를 다시 누르면 취소된다. */
+export async function toggleFeedCommentReaction(feedId: string, commentId: string, emoji: FeedReaction, userId: string) {
+	await ensureDatabase();
+	const db = getDb();
+	const [comment] = await db.select({ feedId: feedComments.feedId }).from(feedComments).where(eq(feedComments.id, commentId)).limit(1);
+	if (!comment || comment.feedId !== feedId) throw new FeedError('댓글을 찾을 수 없어요.', 404);
+
+	const key = and(eq(feedCommentReactions.commentId, commentId), eq(feedCommentReactions.userId, userId), eq(feedCommentReactions.emoji, emoji));
+	const removed = await db.delete(feedCommentReactions).where(key).returning({ emoji: feedCommentReactions.emoji });
+	if (removed.length) return { reacted: false };
+	// 동시에 두 번 눌려도 기본 키가 중복을 막는다.
+	await db.insert(feedCommentReactions).values({ commentId, userId, emoji }).onConflictDoNothing();
+	return { reacted: true };
 }

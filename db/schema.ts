@@ -1,4 +1,4 @@
-import { boolean, check, index, pgTable, text, timestamp, uniqueIndex, uuid, type AnyPgColumn } from 'drizzle-orm/pg-core';
+import { boolean, check, index, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid, type AnyPgColumn } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 export const user = pgTable('user', {
@@ -186,4 +186,20 @@ export const feedComments = pgTable(
 		index('feed_comments_feed_id_created_at_idx').on(table.feedId, table.createdAt),
 		index('feed_comments_parent_id_idx').on(table.parentId),
 	],
+);
+
+export const feedCommentReactions = pgTable(
+	'feed_comment_reactions',
+	{
+		commentId: uuid('comment_id')
+			.notNull()
+			.references(() => feedComments.id, { onDelete: 'cascade' }),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		// 허용 목록은 lib/schemas/feed.ts의 FEED_REACTIONS가 검사한다.
+		emoji: text('emoji').notNull(),
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [primaryKey({ columns: [table.commentId, table.userId, table.emoji] })],
 );
