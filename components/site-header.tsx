@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BookOpen, BookOpenCheck, ChevronDown, Compass, NotebookPen, Plus, ShieldCheck } from 'lucide-react';
+import { BookOpen, BookOpenCheck, Compass, NotebookPen, Plus, ShieldCheck } from 'lucide-react';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { getCurrentSession } from '@/lib/auth-session';
 
@@ -26,39 +26,32 @@ export async function SiteHeader() {
 			</Link>
 			<nav aria-label="주요 메뉴">
 				{user ? (
-					<div className="app-header-menu">
+					<>
+						<Link href="/books">
+							<Compass size={16} /> 책 둘러보기
+						</Link>
+						<Link href="/loans">
+							<BookOpenCheck size={16} /> 내 대여
+						</Link>
+						<Link href="/feeds">
+							<NotebookPen size={16} /> 피드
+						</Link>
+						<Link href="/books/new">
+							<Plus size={16} /> 책 등록
+						</Link>
+						<LogoutButton />
+						{user.role === 'admin' && (
+							<Link href="/admin/members">
+								<ShieldCheck size={16} /> 회원 관리
+							</Link>
+						)}
 						<Link
 							className="app-header-account"
 							href="/profile"
 						>
 							{user.name}님
-							<ChevronDown
-								size={15}
-								aria-hidden="true"
-							/>
 						</Link>
-						{/* ponytail: 호버·포커스만으로 여는 CSS 드롭다운. 클릭 토글이 필요해지면 클라이언트 컴포넌트로 뺀다. */}
-						<div className="app-header-dropdown">
-							<Link href="/books">
-								<Compass size={16} /> 책 둘러보기
-							</Link>
-							<Link href="/loans">
-								<BookOpenCheck size={16} /> 내 대여
-							</Link>
-							<Link href="/feeds">
-								<NotebookPen size={16} /> 피드
-							</Link>
-							<Link href="/books/new">
-								<Plus size={16} /> 책 등록
-							</Link>
-							{user.role === 'admin' && (
-								<Link href="/admin/members">
-									<ShieldCheck size={16} /> 회원 관리
-								</Link>
-							)}
-							<LogoutButton />
-						</div>
-					</div>
+					</>
 				) : (
 					<>
 						<Link href="/books">책 둘러보기</Link>
