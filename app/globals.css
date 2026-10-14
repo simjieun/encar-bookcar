@@ -1521,6 +1521,7 @@ button:disabled {
 	margin-top: 34px;
 }
 .book-detail-actions a,
+.book-detail-actions > button,
 .book-delete-button {
 	display: inline-flex;
 	min-height: 44px;
@@ -1553,20 +1554,40 @@ button:disabled {
 		width: calc(100% - 32px);
 		gap: 12px;
 	}
-	/* ponytail: 로그인 메뉴 6~7개는 가로 스크롤로 버틴다. 부족해지면 햄버거 메뉴로. */
+	/* 모바일: 메뉴를 브랜드 아래 한 줄로 내리고, 아이콘 + 짧은 이름으로 칸을 똑같이 나눠 스크롤 없이 담는다. */
+	.app-header {
+		height: auto;
+		flex-wrap: wrap;
+		padding: 12px 0 8px;
+		row-gap: 8px;
+	}
 	.app-header nav {
-		min-width: 0;
-		overflow-x: auto;
+		width: 100%;
+		gap: 2px;
 	}
 	.app-header nav > * {
-		flex: none;
-		white-space: nowrap;
+		flex: 1 1 0;
+		min-width: 0;
 	}
-	.app-header .app-header-account {
-		max-width: 90px;
+	.app-header nav a,
+	.app-header nav .profile-logout {
+		min-height: 52px;
+		flex-direction: column;
+		justify-content: center;
+		gap: 3px;
+		padding: 0 2px;
+		font-size: 11px;
+		letter-spacing: -0.04em;
+		white-space: nowrap;
+		border-radius: 11px;
+	}
+	.app-header nav .nav-full {
+		display: none;
+	}
+	.app-header .nav-name {
+		max-width: 100%;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 	.books-page-hero,
 	.book-form-hero {
@@ -2957,6 +2978,88 @@ button:disabled {
 	width: min(1080px, calc(100% - 40px));
 	margin: 0 auto;
 	padding-bottom: 70px;
+}
+/* 책 찾아요 — 목록·카드는 피드 클래스를 그대로 쓰고, 상세의 응답자·서가 매칭만 따로 둔다. */
+.wanted-section {
+	padding-top: 22px;
+}
+/* 목록으로 링크를 아래 .book-detail-container와 같은 폭·왼쪽 선에 맞춘다. */
+.wanted-detail-nav {
+	width: min(980px, calc(100% - 40px));
+	margin: 34px auto 0;
+}
+.wanted-detail-nav + .book-detail-container {
+	padding-top: 24px;
+}
+@media (max-width: 760px) {
+	.wanted-detail-nav {
+		width: calc(100% - 32px);
+	}
+}
+.wanted-library-match {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 28px;
+	padding: 14px 16px;
+	color: var(--brand);
+	background: color-mix(in srgb, var(--brand) 7%, white);
+	border: 1px solid color-mix(in srgb, var(--brand) 22%, white);
+	border-radius: 14px;
+}
+.wanted-library-match span {
+	display: grid;
+	flex: 1;
+	gap: 2px;
+}
+.wanted-library-match strong {
+	font-size: 15px;
+	font-weight: 820;
+}
+.wanted-library-match small {
+	color: var(--body);
+	font-size: 13px;
+}
+.wanted-offers {
+	display: grid;
+	gap: 12px;
+	margin-top: 34px;
+	padding: 20px;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 16px;
+}
+.wanted-offers h2 {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	margin: 0;
+	font-size: 18px;
+	font-weight: 820;
+}
+.wanted-offers ul {
+	display: grid;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.wanted-offers li {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	font-size: 14px;
+}
+.wanted-offers li small,
+.wanted-offers > p {
+	margin: 0;
+	color: var(--muted);
+	font-size: 13px;
+}
+.wanted-offers > a {
+	color: var(--brand);
+	font-size: 14px;
+	font-weight: 780;
 }
 .feed-list {
 	display: grid;
