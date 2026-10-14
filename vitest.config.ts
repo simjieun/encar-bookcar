@@ -21,6 +21,7 @@ export default defineConfig({
 	test: {
 		environment: 'jsdom',
 		setupFiles: ['./tests/setup.ts'],
-		env: { DATABASE_URL: testDatabaseUrl },
+		// ensureDatabase()는 DIRECT_URL로 마이그레이션하므로 이것도 막지 않으면 운영 DB에 DDL이 간다.
+		env: { DATABASE_URL: testDatabaseUrl, DIRECT_URL: testDatabaseUrl },
 	},
 });
