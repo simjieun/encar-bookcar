@@ -203,3 +203,46 @@ export const feedCommentReactions = pgTable(
 	},
 	(table) => [primaryKey({ columns: [table.commentId, table.userId, table.emoji] })],
 );
+
+// 읽고 싶은 책 요청. 책 정보는 카카오 검색 결과를 그대로 복사해 두고 books와는 ISBN으로만 느슨하게 맞춘다.
+export const wantedBooks = pgTable(
+	'wanted_books',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		requesterId: text('requester_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		title: text('title').notNull(),
+		author: text('author').notNull(),
+		publisher: text('publisher'),
+		isbn: text('isbn'),
+		coverImageUrl: text('cover_image_url'),
+		publishedAt: text('published_at'),
+		sourceLink: text('source_link'),
+		message: text('message'),
+		status: text('status').default('OPEN').notNull(),
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+		updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [
+		index('wanted_books_status_created_at_idx').on(table.status, table.createdAt),
+		index('wanted_books_requester_id_idx').on(table.requesterId),
+		index('wanted_books_isbn_idx').on(table.isbn),
+		check('wanted_books_status_check', sql`${table.status} in ('OPEN', 'FOUND')`),
+	],
+);
+
+// "나 그거 있어요" 응답. 한 사람이 한 요청에 한 번만 남긴다.
+export const wantedBookOffers = pgTable(
+	'wanted_book_offers',
+	{
+		wantedBookId: uuid('wanted_book_id')
+			.notNull()
+			.references(() => wantedBooks.id, { onDelete: 'cascade' }),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+	},
+	(table) => [primaryKey({ columns: [table.wantedBookId, table.userId] })],
+);

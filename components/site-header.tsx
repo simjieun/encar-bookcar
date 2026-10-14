@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BookOpen, BookOpenCheck, Compass, NotebookPen, Plus, ShieldCheck } from 'lucide-react';
+import { BookOpen, BookOpenCheck, BookSearch, Compass, LogIn, NotebookPen, Plus, ShieldCheck, UserRound } from 'lucide-react';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { getCurrentSession } from '@/lib/auth-session';
 
@@ -28,7 +28,7 @@ export async function SiteHeader() {
 				{user ? (
 					<>
 						<Link href="/books">
-							<Compass size={16} /> 책 둘러보기
+							<Compass size={16} /> <span className="nav-full">책 </span>둘러보기
 						</Link>
 						<Link href="/loans">
 							<BookOpenCheck size={16} /> 내 대여
@@ -36,31 +36,41 @@ export async function SiteHeader() {
 						<Link href="/feeds">
 							<NotebookPen size={16} /> 피드
 						</Link>
+						<Link href="/wanted">
+							<BookSearch size={16} /> <span className="nav-full">책 </span>찾아요
+						</Link>
 						<Link href="/books/new">
-							<Plus size={16} /> 책 등록
+							<Plus size={16} /> <span className="nav-full">책 </span>등록
 						</Link>
 						<LogoutButton />
 						{user.role === 'admin' && (
 							<Link href="/admin/members">
-								<ShieldCheck size={16} /> 회원 관리
+								<ShieldCheck size={16} /> 회원<span className="nav-full"> 관리</span>
 							</Link>
 						)}
 						<Link
 							className="app-header-account"
 							href="/profile"
 						>
-							{user.name}님
+							<UserRound size={16} /> <span className="nav-name">{user.name}님</span>
 						</Link>
 					</>
 				) : (
 					<>
-						<Link href="/books">책 둘러보기</Link>
-						<Link href="/feeds">피드</Link>
+						<Link href="/books">
+							<Compass size={16} /> <span className="nav-full">책 </span>둘러보기
+						</Link>
+						<Link href="/feeds">
+							<NotebookPen size={16} /> 피드
+						</Link>
+						<Link href="/wanted">
+							<BookSearch size={16} /> <span className="nav-full">책 </span>찾아요
+						</Link>
 						<Link
 							className="app-header-account"
 							href="/login"
 						>
-							로그인
+							<LogIn size={16} /> 로그인
 						</Link>
 					</>
 				)}

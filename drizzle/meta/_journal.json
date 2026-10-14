@@ -64,6 +64,13 @@
       "when": 1791791814667,
       "tag": "0008_late_epoch",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791943645232,
+      "tag": "0009_wanted_books",
+      "breakpoints": true
     }
   ]
 }

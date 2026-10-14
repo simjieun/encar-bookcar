@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const bookStatusSchema = z.enum(['AVAILABLE', 'BORROWED', 'UNAVAILABLE']);
 
-const optionalUrl = z
+export const optionalUrl = z
 	.string()
 	.trim()
 	.max(500, 'URL이 너무 길어요.')
