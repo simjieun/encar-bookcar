@@ -10,6 +10,8 @@
 	--surface: #f4f6f8;
 	--border: #e5e8eb;
 	--success: #20b486;
+	--personal: #f07a28;
+	--personal-light: #fff3e8;
 }
 
 @theme inline {
@@ -462,6 +464,45 @@ button:disabled {
 .member-info .member-joined {
 	color: var(--muted);
 	font-size: 13px;
+}
+
+.admin-transfer-bar {
+	position: sticky;
+	top: 12px;
+	z-index: 2;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 16px;
+	padding: 14px 16px;
+	background: white;
+	border: 1px solid var(--border);
+	border-radius: 16px;
+	box-shadow: 0 4px 18px rgb(25 31 40 / 6%);
+}
+.admin-transfer-bar select {
+	flex: 1 1 220px;
+	min-width: 0;
+	padding: 10px 12px;
+	color: var(--strong);
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+}
+.admin-book-row {
+	display: flex;
+	flex: 1;
+	align-items: center;
+	gap: 12px;
+	min-width: 0;
+	cursor: pointer;
+}
+.admin-book-row input {
+	width: 18px;
+	height: 18px;
+	flex: none;
+	accent-color: var(--brand);
 }
 
 .member-reset-button,
@@ -1111,6 +1152,77 @@ button:disabled {
 .book-card-real:hover .real-book-cover {
 	transform: translateY(-2px);
 }
+/* 개인 소장 책: 띠지 + 테두리로 북클럽 책과 구분 */
+.book-card-personal {
+	position: relative;
+	box-shadow:
+		inset 0 0 0 2px var(--personal-light),
+		0 4px 18px rgb(25 31 40 / 4%);
+}
+.book-ribbon {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 6px 16px 6px 10px;
+	color: white;
+	background: var(--personal);
+	font-size: 11px;
+	font-weight: 800;
+	clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%);
+}
+.book-card-personal .book-ribbon {
+	position: absolute;
+	top: 30px;
+	left: 10px;
+	z-index: 1;
+	box-shadow: 0 4px 10px rgb(240 122 40 / 25%);
+}
+.owner-personal {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--personal);
+}
+.book-ownership-options {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+.book-ownership-options label {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 15px;
+	color: var(--body);
+	font-size: 14px;
+	font-weight: 700;
+	background: #f7f8fa;
+	border: 1px solid transparent;
+	border-radius: 14px;
+	cursor: pointer;
+}
+.book-ownership-options label:has(input:checked) {
+	color: var(--brand);
+	background: var(--brand-light);
+	border-color: var(--brand);
+}
+.book-form-field .book-ownership-options input {
+	width: auto;
+	padding: 0;
+	accent-color: var(--brand);
+}
+.book-form-field > legend {
+	margin-bottom: 8px;
+	padding: 0;
+	color: #333d4b;
+	font-size: 13px;
+	font-weight: 750;
+}
+fieldset.book-form-field {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
 .status-available {
 	color: #13795b;
 	background: #e6f8f2;
@@ -1502,6 +1614,33 @@ button:disabled {
 }
 .book-description {
 	margin-top: 34px;
+}
+.book-detail-badges {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+.book-recommendation {
+	margin-top: 30px;
+	padding: 20px 22px;
+	background: var(--personal-light);
+	border-radius: 20px;
+}
+.book-recommendation h2 {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--personal);
+	font-size: 13px;
+	font-weight: 800;
+}
+.book-recommendation p {
+	margin: 10px 0 0;
+	color: var(--strong);
+	font-size: 17px;
+	font-weight: 700;
+	line-height: 1.6;
 }
 .book-description h2 {
 	font-size: 18px;
@@ -2446,6 +2585,14 @@ button:disabled {
 	color: var(--brand);
 	background: white;
 	box-shadow: 0 4px 16px rgb(31 63 104 / 8%);
+}
+.loan-tabs.books-tabs,
+.loan-tabs.admin-tabs {
+	width: 100%;
+	margin-bottom: 20px;
+}
+.loan-tabs.books-tabs {
+	grid-template-columns: repeat(3, 1fr);
 }
 .loan-tabs b {
 	display: grid;

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BookOpen, BookOpenCheck, BookSearch, Compass, LogIn, NotebookPen, Plus, ShieldCheck, UserRound } from 'lucide-react';
+import { BookOpen, BookOpenCheck, BookSearch, Library, LogIn, NotebookPen, Plus, ShieldCheck, UserRound } from 'lucide-react';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { getCurrentSession } from '@/lib/auth-session';
 
@@ -28,7 +28,7 @@ export async function SiteHeader() {
 				{user ? (
 					<>
 						<Link href="/books">
-							<Compass size={16} /> <span className="nav-full">책 </span>둘러보기
+							<Library size={16} /> 책장
 						</Link>
 						<Link href="/loans">
 							<BookOpenCheck size={16} /> 내 대여
@@ -58,7 +58,7 @@ export async function SiteHeader() {
 				) : (
 					<>
 						<Link href="/books">
-							<Compass size={16} /> <span className="nav-full">책 </span>둘러보기
+							<Library size={16} /> 책장
 						</Link>
 						<Link href="/feeds">
 							<NotebookPen size={16} /> 피드

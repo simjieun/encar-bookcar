@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { ShieldCheck } from 'lucide-react';
 import { PasswordResetButton } from '@/components/admin/password-reset-button';
@@ -40,6 +41,20 @@ export default async function AdminMembersPage() {
 						<ShieldCheck size={15} /> 관리자
 					</span>
 				</div>
+
+				<nav
+					className="loan-tabs admin-tabs"
+					aria-label="관리자 메뉴"
+				>
+					<Link
+						className="active"
+						href="/admin/members"
+						aria-current="page"
+					>
+						회원 관리
+					</Link>
+					<Link href="/admin/books">책 이관</Link>
+				</nav>
 
 				<p className="admin-guide">
 					비밀번호를 잊은 동료의 계정을 초기화하면 임시 비밀번호가 한 번만 표시됩니다. 사내 메신저로 본인에게 직접 전달하고, 로그인 후 내 정보에서 바로 바꾸도록 안내해 주세요.

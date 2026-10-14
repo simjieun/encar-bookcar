@@ -71,6 +71,13 @@
       "when": 1791943645232,
       "tag": "0009_wanted_books",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791963330795,
+      "tag": "0010_personal_books",
+      "breakpoints": true
     }
   ]
 }

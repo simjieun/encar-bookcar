@@ -9,10 +9,11 @@ import { BookCard } from './book-card';
 
 type BookResponse = { books: BookView[]; hasMore: boolean; page: number };
 
-async function fetchBooks({ query, status, sort, page }: { query: string; status: string; sort: string; page: number }) {
+async function fetchBooks({ query, status, ownership, sort, page }: { query: string; status: string; ownership: string; sort: string; page: number }) {
 	const params = new URLSearchParams({
 		query,
 		status,
+		ownership,
 		sort,
 		page: String(page),
 	});
@@ -21,14 +22,14 @@ async function fetchBooks({ query, status, sort, page }: { query: string; status
 	return (await response.json()) as BookResponse;
 }
 
-export function BookCatalog({ compact = false }: { compact?: boolean }) {
+export function BookCatalog({ compact = false, ownership = 'ALL' }: { compact?: boolean; ownership?: string }) {
 	const [input, setInput] = useState('');
 	const [query, setQuery] = useState('');
 	const [status, setStatus] = useState('ALL');
 	const [sort, setSort] = useState('latest');
 	const booksQuery = useInfiniteQuery({
-		queryKey: ['books', query, status, sort],
-		queryFn: ({ pageParam }) => fetchBooks({ query, status, sort, page: pageParam }),
+		queryKey: ['books', query, status, ownership, sort],
+		queryFn: ({ pageParam }) => fetchBooks({ query, status, ownership, sort, page: pageParam }),
 		initialPageParam: 1,
 		getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
 	});

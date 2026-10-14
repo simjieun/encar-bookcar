@@ -4,6 +4,7 @@ import type { BookStatus } from '@/lib/schemas/book';
 import type { LoanView } from '@/lib/types/loan';
 import { BorrowerManager } from './borrower-manager';
 import { LoanActionButton } from './loan-action-button';
+import { ReservationQueue } from './reservation-queue';
 
 type Props = {
 	bookId: string;
@@ -130,23 +131,7 @@ export function BookLoanPanel({
 				<div className="owner-loan-content">
 					<h2>{currentBorrowerName ? `${currentBorrowerName}님이 대여 중이에요` : '현재 대여자가 없어요'}</h2>
 					<p>{queue.length ? `${queue.length}명이 순서대로 기다리고 있어요.` : '예약자가 생기면 이곳에 순서가 표시돼요.'}</p>
-					{queue.length > 0 && (
-						<ol className="reservation-queue">
-							{queue.map((item) => (
-								<li key={item.id}>
-									<span>{item.queuePosition}</span>
-									<strong>{item.borrowerName}</strong>
-									<small>
-										{new Intl.DateTimeFormat('ko-KR', {
-											month: 'short',
-											day: 'numeric',
-										}).format(new Date(item.requestedAt))}{' '}
-										예약
-									</small>
-								</li>
-							))}
-						</ol>
-					)}
+					{queue.length > 0 && <ReservationQueue queue={queue} />}
 					{currentLoan?.status === 'RETURN_REQUESTED' && (
 						<LoanActionButton
 							loanId={currentLoan.id}
@@ -197,6 +182,12 @@ export function BookLoanPanel({
 						? `현재 ${currentBorrowerName ?? '다른 동료'}님이 대여 중이에요. 예약은 신청 순서대로 연결돼요.`
 						: '대여 가능 상태라 지금 바로 대여할 수 있어요.'}
 				</p>
+				{borrowed && queue.length > 0 && (
+					<>
+						<p>이미 {queue.length}명이 예약했어요.</p>
+						<ReservationQueue queue={queue} />
+					</>
+				)}
 			</div>
 			<LoanActionButton
 				bookId={bookId}

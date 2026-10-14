@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const bookStatusSchema = z.enum(['AVAILABLE', 'BORROWED', 'UNAVAILABLE']);
+export const bookOwnershipSchema = z.enum(['CLUB', 'PERSONAL']);
 
 export const optionalUrl = z
 	.string()
@@ -27,6 +28,8 @@ export const bookSchema = z
 		sourceLink: optionalUrl,
 		location: z.string().trim().max(100, '보관 장소는 100자 이하로 입력해 주세요.'),
 		status: bookStatusSchema,
+		ownership: bookOwnershipSchema,
+		recommendation: z.string().trim().max(80, '추천 한마디는 80자 이하로 입력해 주세요.'),
 		currentBorrowerId: z.string().trim().max(128),
 		currentBorrowerName: z.string().trim().max(80, '대여자 이름은 80자 이하로 입력해 주세요.'),
 	})
@@ -43,9 +46,22 @@ export const bookSchema = z
 export const bookListQuerySchema = z.object({
 	query: z.string().trim().max(100).default(''),
 	status: z.enum(['ALL', 'AVAILABLE', 'BORROWED', 'UNAVAILABLE']).default('ALL'),
+	ownership: z.enum(['ALL', 'CLUB', 'PERSONAL']).default('ALL'),
 	sort: z.enum(['latest', 'oldest']).default('latest'),
 	page: z.coerce.number().int().min(1).max(1000).default(1),
 });
+
+export const bookOwnershipTransferSchema = z
+	.object({
+		bookIds: z.array(z.uuid()).min(1, '이관할 책을 선택해 주세요.').max(500),
+		ownership: bookOwnershipSchema,
+		ownerId: z.string().trim().max(128),
+	})
+	.superRefine((input, context) => {
+		if (input.ownership === 'PERSONAL' && !input.ownerId) {
+			context.addIssue({ code: 'custom', path: ['ownerId'], message: '책을 소장한 동료를 선택해 주세요.' });
+		}
+	});
 
 export const kakaoBookQuerySchema = z.object({
 	query: z.string().trim().min(2, '검색어를 두 글자 이상 입력해 주세요.').max(100),
@@ -77,9 +93,16 @@ export const kakaoBookResponseSchema = z.object({
 
 export type BookInput = z.infer<typeof bookSchema>;
 export type BookStatus = z.infer<typeof bookStatusSchema>;
+export type BookOwnership = z.infer<typeof bookOwnershipSchema>;
+export type BookOwnershipTransfer = z.infer<typeof bookOwnershipTransferSchema>;
 
 export const BOOK_STATUS_LABELS: Record<BookStatus, string> = {
 	AVAILABLE: '대여 가능',
 	BORROWED: '대여 중',
 	UNAVAILABLE: '대여 불가',
+};
+
+export const BOOK_OWNERSHIP_LABELS: Record<BookOwnership, string> = {
+	CLUB: '북클럽 책',
+	PERSONAL: '개인 소장',
 };
