@@ -23,6 +23,8 @@ const emptyBook: BookInput = {
 	sourceLink: '',
 	location: '',
 	status: 'AVAILABLE',
+	ownership: 'CLUB',
+	recommendation: '',
 	currentBorrowerId: '',
 	currentBorrowerName: '',
 };
@@ -119,6 +121,39 @@ export function BookForm({ initialValue, bookId }: { initialValue?: BookInput; b
 							</p>
 						</aside>
 						<div className="book-form-fields">
+							<fieldset className="book-form-field">
+								<legend>이 책은 누구의 책인가요?</legend>
+								<div className="book-ownership-options">
+									<label>
+										<input
+											type="radio"
+											value="CLUB"
+											{...register('ownership')}
+										/>
+										북클럽 책 (법인카드 구매)
+									</label>
+									<label>
+										<input
+											type="radio"
+											value="PERSONAL"
+											{...register('ownership')}
+										/>
+										내 책 (개인 소장)
+									</label>
+								</div>
+							</fieldset>
+							{values.ownership === 'PERSONAL' && (
+								<Field
+									label="추천 한마디 (선택)"
+									error={errors.recommendation?.message}
+								>
+									<input
+										maxLength={80}
+										placeholder="예: 이직 고민될 때 큰 힘이 됐어요"
+										{...register('recommendation')}
+									/>
+								</Field>
+							)}
 							<Field
 								label="책 제목"
 								error={errors.title?.message}
@@ -159,7 +194,7 @@ export function BookForm({ initialValue, bookId }: { initialValue?: BookInput; b
 								error={errors.location?.message}
 							>
 								<input
-									placeholder="예: 판교 오피스 8층, 사내 우편 가능"
+									placeholder={values.ownership === 'PERSONAL' ? '예: 제 자리(8층 A-12)로 찾아오세요' : '예: 판교 오피스 8층, 사내 우편 가능'}
 									{...register('location')}
 								/>
 							</Field>

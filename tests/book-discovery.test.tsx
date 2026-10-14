@@ -16,6 +16,8 @@ const sampleBook = {
 	sourceLink: null,
 	location: '판교 오피스',
 	status: 'AVAILABLE',
+	ownership: 'CLUB',
+	recommendation: null,
 	currentBorrowerId: null,
 	currentBorrowerName: null,
 	ownerId: 'user-1',
@@ -41,10 +43,11 @@ beforeEach(() => {
 		vi.fn(async (input: string | URL | Request) => {
 			const url = String(input);
 			const empty = url.includes('query=%EC%97%86%EB%8A%94+%EC%B1%85');
+			const personalBook = { ...sampleBook, id: 'personal-1', title: '아몬드', ownership: 'PERSONAL', ownerName: '이소장' };
 			return {
 				ok: true,
 				json: async () => ({
-					books: empty ? [] : [sampleBook],
+					books: empty ? [] : [sampleBook, personalBook],
 					hasMore: false,
 					page: 1,
 				}),
@@ -77,5 +80,16 @@ describe('BookDiscovery', () => {
 
 		expect(await screen.findByText('찾는 책이 아직 없어요')).toBeVisible();
 		expect(screen.getByRole('link', { name: '책 등록하기' })).toHaveAttribute('href', '/books/new');
+	});
+
+	it('개인 소장 책은 띠지와 소장자 문구로 북클럽 책과 구분한다', async () => {
+		renderDiscovery();
+		const personal = (await screen.findByRole('heading', { name: '아몬드' })).closest('a')!;
+		expect(personal).toHaveTextContent('개인 소장');
+		expect(personal).toHaveTextContent('이소장 님이 빌려줘요');
+
+		const club = screen.getByRole('heading', { name: '소년이 온다' }).closest('a')!;
+		expect(club).toHaveTextContent('북클럽 책 · 김독서 님 등록');
+		expect(club).not.toHaveTextContent('개인 소장');
 	});
 });

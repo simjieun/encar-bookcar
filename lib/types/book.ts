@@ -1,4 +1,4 @@
-import type { BookStatus } from '@/lib/schemas/book';
+import type { BookOwnership, BookStatus } from '@/lib/schemas/book';
 
 export type BookView = {
 	id: string;
@@ -12,6 +12,8 @@ export type BookView = {
 	sourceLink: string | null;
 	location: string | null;
 	status: BookStatus;
+	ownership: BookOwnership;
+	recommendation: string | null;
 	currentBorrowerId: string | null;
 	currentBorrowerName: string | null;
 	ownerId: string;

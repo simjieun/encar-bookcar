@@ -1,9 +1,9 @@
 import 'server-only';
 
-import { and, asc, count, countDistinct, desc, eq, ilike, or, type SQL } from 'drizzle-orm';
+import { and, asc, count, countDistinct, desc, eq, ilike, inArray, or, type SQL } from 'drizzle-orm';
 import { ensureDatabase, getDb } from '@/db';
 import { books, user } from '@/db/schema';
-import type { BookInput } from '@/lib/schemas/book';
+import type { BookInput, BookOwnershipTransfer } from '@/lib/schemas/book';
 
 export const BOOK_PAGE_SIZE = 20;
 
@@ -19,6 +19,8 @@ export const bookSelection = {
 	sourceLink: books.sourceLink,
 	location: books.location,
 	status: books.status,
+	ownership: books.ownership,
+	recommendation: books.recommendation,
 	currentBorrowerId: books.currentBorrowerId,
 	currentBorrowerName: books.currentBorrowerName,
 	ownerId: books.ownerId,
@@ -27,7 +29,7 @@ export const bookSelection = {
 	updatedAt: books.updatedAt,
 };
 
-export async function listBooks(options: { query?: string; status?: string; sort?: 'latest' | 'oldest'; page?: number; limit?: number }) {
+export async function listBooks(options: { query?: string; status?: string; ownership?: string; sort?: 'latest' | 'oldest'; page?: number; limit?: number }) {
 	await ensureDatabase();
 	const db = getDb();
 	const conditions: SQL[] = [];
@@ -38,6 +40,9 @@ export async function listBooks(options: { query?: string; status?: string; sort
 	}
 	if (options.status && options.status !== 'ALL') {
 		conditions.push(eq(books.status, options.status));
+	}
+	if (options.ownership && options.ownership !== 'ALL') {
+		conditions.push(eq(books.ownership, options.ownership));
 	}
 
 	const limit = options.limit ?? BOOK_PAGE_SIZE;
@@ -93,8 +98,26 @@ export function toBookRecord(input: BookInput) {
 		sourceLink: input.sourceLink || null,
 		location: input.location || null,
 		status: input.status,
+		ownership: input.ownership,
+		recommendation: input.ownership === 'PERSONAL' ? input.recommendation || null : null,
 		currentBorrowerId: input.status === 'BORROWED' ? input.currentBorrowerId || null : null,
 		currentBorrowerName: input.status === 'BORROWED' ? input.currentBorrowerName || null : null,
 		updatedAt: new Date(),
 	};
+}
+
+// 동료의 서재로 이관하면 소장자가 등록자(ownerId)가 되어 이후 대여 승인·수정 권한도 넘어간다.
+// 북클럽 책으로 되돌릴 때는 등록자를 그대로 두고 추천 한마디만 지운다.
+export async function transferBookOwnership(input: BookOwnershipTransfer) {
+	await ensureDatabase();
+	const updated = await getDb()
+		.update(books)
+		.set(
+			input.ownership === 'PERSONAL'
+				? { ownership: 'PERSONAL', ownerId: input.ownerId, updatedAt: new Date() }
+				: { ownership: 'CLUB', recommendation: null, updatedAt: new Date() },
+		)
+		.where(inArray(books.id, input.bookIds))
+		.returning({ id: books.id });
+	return updated.length;
 }

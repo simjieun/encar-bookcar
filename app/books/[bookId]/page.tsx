@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { CalendarDays, ExternalLink, MapPin, Pencil, UserRound } from 'lucide-react';
+import { CalendarDays, ExternalLink, MapPin, Pencil, Quote, UserRound } from 'lucide-react';
 import { z } from 'zod';
 import { BookCover } from '@/components/books/book-cover';
 import { DeleteBookButton } from '@/components/books/delete-book-button';
@@ -24,6 +24,7 @@ export default async function BookDetailPage({ params }: { params: Promise<{ boo
 	const parsedStatus = bookStatusSchema.safeParse(book.status);
 	if (!parsedStatus.success) notFound();
 	const isOwner = session?.user.id === book.ownerId;
+	const personal = book.ownership === 'PERSONAL';
 	const isAdmin = session?.user.role === 'admin';
 	const published = book.publishedAt?.replace(/^(\d{4})(\d{2})(\d{2})$/, '$1.$2.$3');
 
@@ -40,14 +41,17 @@ export default async function BookDetailPage({ params }: { params: Promise<{ boo
 					/>
 				</div>
 				<div className="book-detail-content">
-					<span className={`detail-status status-${book.status.toLowerCase()}`}>{BOOK_STATUS_LABELS[parsedStatus.data]}</span>
+					<div className="book-detail-badges">
+						<span className={`detail-status status-${book.status.toLowerCase()}`}>{BOOK_STATUS_LABELS[parsedStatus.data]}</span>
+						{personal && <span className="book-ribbon">개인 소장</span>}
+					</div>
 					<h1>{book.title}</h1>
 					<p className="book-detail-author">{book.author}</p>
 					<dl className="book-meta">
 						<div>
 							<dt>
 								<UserRound size={18} />
-								등록자
+								{personal ? '소장자' : '등록자'}
 							</dt>
 							<dd>{book.ownerName}</dd>
 						</div>
@@ -85,6 +89,15 @@ export default async function BookDetailPage({ params }: { params: Promise<{ boo
 							</div>
 						)}
 					</dl>
+					{personal && book.recommendation && (
+						<section className="book-recommendation">
+							<h2>
+								<Quote size={15} />
+								{book.ownerName} 님의 추천 한마디
+							</h2>
+							<p>{book.recommendation}</p>
+						</section>
+					)}
 					{book.description && (
 						<section className="book-description">
 							<h2>이 책에 대해</h2>

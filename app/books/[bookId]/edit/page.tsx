@@ -4,7 +4,7 @@ import { BookForm } from '@/components/books/book-form';
 import { SiteHeader } from '@/components/site-header';
 import { getCurrentSession } from '@/lib/auth-session';
 import { getBook } from '@/lib/book-data';
-import { bookStatusSchema, type BookInput } from '@/lib/schemas/book';
+import { bookOwnershipSchema, bookStatusSchema, type BookInput } from '@/lib/schemas/book';
 
 export const metadata: Metadata = { title: '책 수정 | 엔카북카' };
 export const dynamic = 'force-dynamic';
@@ -29,6 +29,8 @@ export default async function EditBookPage({ params }: { params: Promise<{ bookI
 		sourceLink: book.sourceLink ?? '',
 		location: book.location ?? '',
 		status: status.data,
+		ownership: bookOwnershipSchema.catch('CLUB').parse(book.ownership),
+		recommendation: book.recommendation ?? '',
 		currentBorrowerId: book.currentBorrowerId ?? '',
 		currentBorrowerName: book.currentBorrowerName ?? '',
 	};

@@ -87,6 +87,9 @@ export const books = pgTable(
 		sourceLink: text('source_link'),
 		location: text('location'),
 		status: text('status').default('AVAILABLE').notNull(),
+		// CLUB: 법인카드로 산 북클럽 책, PERSONAL: 회원 개인 소장 책
+		ownership: text('ownership').default('CLUB').notNull(),
+		recommendation: text('recommendation'),
 		currentBorrowerId: text('current_borrower_id').references(() => user.id, {
 			onDelete: 'set null',
 		}),
@@ -104,6 +107,7 @@ export const books = pgTable(
 		index('books_status_created_at_idx').on(table.status, table.createdAt),
 		index('books_current_borrower_id_idx').on(table.currentBorrowerId),
 		check('books_status_check', sql`${table.status} in ('AVAILABLE', 'BORROWED', 'UNAVAILABLE')`),
+		check('books_ownership_check', sql`${table.ownership} in ('CLUB', 'PERSONAL')`),
 	],
 );
 
