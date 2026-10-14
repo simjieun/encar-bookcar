@@ -203,6 +203,15 @@ export async function deleteFeedComment(commentId: string, userId: string) {
 	await getDb().delete(feedComments).where(eq(feedComments.id, commentId));
 }
 
+export async function updateFeedComment(feedId: string, commentId: string, content: string, userId: string) {
+	await ensureDatabase();
+	const db = getDb();
+	const [comment] = await db.select({ feedId: feedComments.feedId, authorId: feedComments.authorId }).from(feedComments).where(eq(feedComments.id, commentId)).limit(1);
+	if (!comment || comment.feedId !== feedId) throw new FeedError('댓글을 찾을 수 없어요.', 404);
+	if (comment.authorId !== userId) throw new FeedError('작성자만 수정할 수 있어요.', 403);
+	await db.update(feedComments).set({ content }).where(eq(feedComments.id, commentId));
+}
+
 /** 같은 이모지를 다시 누르면 취소된다. */
 export async function toggleFeedCommentReaction(feedId: string, commentId: string, emoji: FeedReaction, userId: string) {
 	await ensureDatabase();

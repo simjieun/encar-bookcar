@@ -1,11 +1,11 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import { CornerDownRight, LoaderCircle, MessageCircle, SmilePlus, Trash2 } from 'lucide-react';
+import { CornerDownRight, LoaderCircle, MessageCircle, Pencil, SmilePlus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { FEED_REACTIONS, feedCommentSchema } from '@/lib/schemas/feed';
+import { FEED_REACTIONS, feedCommentSchema, feedCommentUpdateSchema } from '@/lib/schemas/feed';
 import type { FeedCommentThread, FeedCommentView } from '@/lib/types/feed';
 
 const dateFormat = new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -17,6 +17,8 @@ export function FeedComments({ feedId, comments, viewerId }: { feedId: string; c
 	const [replyTo, setReplyTo] = useState<string | null>(null);
 	// 이모지 선택지도 한 번에 하나만 연다.
 	const [pickerFor, setPickerFor] = useState<string | null>(null);
+	// 수정 중인 댓글도 한 번에 하나만.
+	const [editing, setEditing] = useState<string | null>(null);
 	const total = comments.reduce((sum, thread) => sum + 1 + thread.replies.length, 0);
 
 	const create = useMutation({
@@ -34,6 +36,26 @@ export function FeedComments({ feedId, comments, viewerId }: { feedId: string; c
 		onSuccess: () => {
 			setError(null);
 			setReplyTo(null);
+			router.refresh();
+		},
+		onError: (mutationError) => setError(mutationError.message),
+	});
+
+	const update = useMutation({
+		mutationFn: async ({ commentId, content }: { commentId: string; content: string }) => {
+			const response = await fetch(`/api/feeds/${feedId}/comments/${commentId}`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ content }),
+			});
+			if (!response.ok) {
+				const payload = (await response.json().catch(() => ({}))) as { message?: string };
+				throw new Error(payload.message ?? '댓글을 수정하지 못했어요.');
+			}
+		},
+		onSuccess: () => {
+			setError(null);
+			setEditing(null);
 			router.refresh();
 		},
 		onError: (mutationError) => setError(mutationError.message),
@@ -81,8 +103,17 @@ export function FeedComments({ feedId, comments, viewerId }: { feedId: string; c
 		return true;
 	}
 
+	function submitEdit(commentId: string, content: string) {
+		const parsed = feedCommentUpdateSchema.safeParse({ content });
+		if (!parsed.success) setError(parsed.error.issues[0].message);
+		else update.mutate({ commentId, content: parsed.data.content });
+		// 입력값은 비우지 않는다 — 성공하면 폼이 닫히고, 실패하면 그대로 다시 고칠 수 있다.
+		return false;
+	}
+
 	function commentBody(comment: FeedCommentView, isReply: boolean) {
 		const isReplyTarget = replyTo === comment.id;
+		const isEditing = editing === comment.id;
 		return (
 			<>
 				<div>
@@ -95,7 +126,18 @@ export function FeedComments({ feedId, comments, viewerId }: { feedId: string; c
 					<strong>{comment.authorName}님</strong>
 					<small>{dateFormat.format(new Date(comment.createdAt))}</small>
 				</div>
-				<p>{comment.content}</p>
+				{isEditing ? (
+					<CommentForm
+						initialValue={comment.content}
+						placeholder="댓글을 수정해 주세요"
+						pending={update.isPending}
+						submitLabel="수정 완료"
+						autoFocus
+						onSubmit={(content) => submitEdit(comment.id, content)}
+					/>
+				) : (
+					<p>{comment.content}</p>
+				)}
 				<div className="feed-comment-actions">
 					{comment.reactions.map((reaction) => (
 						<button
@@ -130,6 +172,17 @@ export function FeedComments({ feedId, comments, viewerId }: { feedId: string; c
 							}}
 						>
 							{isReplyTarget ? '답글 취소' : '답글'}
+						</button>
+					)}
+					{viewerId === comment.authorId && (
+						<button
+							type="button"
+							onClick={() => {
+								setError(null);
+								setEditing(isEditing ? null : comment.id);
+							}}
+						>
+							<Pencil size={14} /> {isEditing ? '수정 취소' : '수정'}
 						</button>
 					)}
 					{viewerId === comment.authorId && (
@@ -230,12 +283,14 @@ export function FeedComments({ feedId, comments, viewerId }: { feedId: string; c
 }
 
 function CommentForm({
+	initialValue = '',
 	placeholder,
 	submitLabel,
 	pending,
 	autoFocus = false,
 	onSubmit,
 }: {
+	initialValue?: string;
 	placeholder: string;
 	submitLabel: string;
 	pending: boolean;
@@ -243,7 +298,7 @@ function CommentForm({
 	/** 검증까지 통과해 전송했으면 true — 그때만 입력값을 비운다. */
 	onSubmit: (content: string) => boolean;
 }) {
-	const [content, setContent] = useState('');
+	const [content, setContent] = useState(initialValue);
 
 	return (
 		<form

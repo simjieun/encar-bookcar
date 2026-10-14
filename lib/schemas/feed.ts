@@ -21,6 +21,8 @@ export const feedCommentSchema = z.object({
 		.default(''),
 });
 
+export const feedCommentUpdateSchema = feedCommentSchema.pick({ content: true });
+
 /** 댓글에 달 수 있는 이모지. 순서대로 선택지에 보인다. */
 export const FEED_REACTIONS = ['👍', '❤️', '😍', '😂', '😮', '😢', '🎉', '📚', '🙏', '💡', '👏', '🔥', '🤔'] as const;
 

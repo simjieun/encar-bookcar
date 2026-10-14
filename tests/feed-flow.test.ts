@@ -104,6 +104,18 @@ describe('피드 댓글', () => {
 		expect(await feedData.listFeedComments(feed.id)).toHaveLength(0);
 	});
 
+	it('본인 댓글만 수정할 수 있다', async () => {
+		const [bookId, otherBookId] = await Promise.all([createBook('수정할 댓글의 책', 'BORROWED'), createBook('다른 피드의 책', 'BORROWED')]);
+		const feed = await feedData.createFeed({ bookId, title: '댓글 수정', content: '내용' }, readerId);
+		const otherFeed = await feedData.createFeed({ bookId: otherBookId, title: '다른 피드', content: '내용' }, readerId);
+		const comment = await feedData.createFeedComment(feed.id, { content: '처음 쓴 댓글' }, outsiderId);
+
+		await expect(feedData.updateFeedComment(feed.id, comment.id, '남이 고침', readerId)).rejects.toMatchObject({ status: 403 });
+		await expect(feedData.updateFeedComment(otherFeed.id, comment.id, '다른 피드로', outsiderId)).rejects.toMatchObject({ status: 404 });
+		await feedData.updateFeedComment(feed.id, comment.id, '고친 댓글', outsiderId);
+		expect(await feedData.listFeedComments(feed.id)).toMatchObject([{ id: comment.id, content: '고친 댓글' }]);
+	});
+
 	it('대댓글은 최상위 댓글 아래에 묶인다', async () => {
 		const bookId = await createBook('대댓글 달릴 책', 'BORROWED');
 		const feed = await feedData.createFeed({ bookId, title: '대댓글 테스트', content: '내용' }, readerId);
