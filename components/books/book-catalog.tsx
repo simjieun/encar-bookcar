@@ -9,7 +9,19 @@ import { BookCard } from './book-card';
 
 type BookResponse = { books: BookView[]; hasMore: boolean; page: number };
 
-async function fetchBooks({ query, status, ownership, sort, page }: { query: string; status: string; ownership: string; sort: string; page: number }) {
+async function fetchBooks({
+	query,
+	status,
+	ownership,
+	sort,
+	page,
+}: {
+	query: string;
+	status: string;
+	ownership: string;
+	sort: string;
+	page: number;
+}) {
 	const params = new URLSearchParams({
 		query,
 		status,
@@ -44,42 +56,42 @@ export function BookCatalog({ compact = false, ownership = 'ALL' }: { compact?: 
 
 	return (
 		<>
-			<div className="catalog-controls">
-				<form
-					className="book-search"
-					onSubmit={search}
-				>
-					<Search
-						size={20}
-						aria-hidden="true"
-					/>
-					<label
-						className="sr-only"
-						htmlFor={compact ? 'home-book-search' : 'book-search'}
+			{!compact && (
+				<div className="catalog-controls">
+					<form
+						className="book-search"
+						onSubmit={search}
 					>
-						책 제목 또는 저자 검색
-					</label>
-					<input
-						id={compact ? 'home-book-search' : 'book-search'}
-						type="search"
-						value={input}
-						onChange={(event) => setInput(event.target.value)}
-						placeholder="책 제목이나 저자를 검색해 보세요"
-					/>
-					{input && (
-						<button
-							type="button"
-							onClick={() => {
-								setInput('');
-								setQuery('');
-							}}
-							aria-label="검색어 지우기"
+						<Search
+							size={20}
+							aria-hidden="true"
+						/>
+						<label
+							className="sr-only"
+							htmlFor="book-search"
 						>
-							<X size={17} />
-						</button>
-					)}
-				</form>
-				{!compact && (
+							책 제목 또는 저자 검색
+						</label>
+						<input
+							id="book-search"
+							type="search"
+							value={input}
+							onChange={(event) => setInput(event.target.value)}
+							placeholder="책 제목이나 저자를 검색해 보세요"
+						/>
+						{input && (
+							<button
+								type="button"
+								onClick={() => {
+									setInput('');
+									setQuery('');
+								}}
+								aria-label="검색어 지우기"
+							>
+								<X size={17} />
+							</button>
+						)}
+					</form>
 					<div className="catalog-filters">
 						<select
 							value={status}
@@ -110,8 +122,8 @@ export function BookCatalog({ compact = false, ownership = 'ALL' }: { compact?: 
 							책 등록하기
 						</Link>
 					</div>
-				)}
-			</div>
+				</div>
+			)}
 
 			{booksQuery.isPending ? (
 				<div

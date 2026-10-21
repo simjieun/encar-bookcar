@@ -1,13 +1,15 @@
-import { ArrowRight, BookOpen, ChevronRight, Plus, Sparkles } from 'lucide-react';
+import { ArrowRight, BookOpen, ChevronRight, NotebookPen, Plus, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { BookDiscovery } from '@/components/book-discovery';
+import { FeedCard } from '@/components/feeds/feed-card';
 import { SiteHeader } from '@/components/site-header';
 import { getBookStats } from '@/lib/book-data';
+import { listFeeds } from '@/lib/feed-data';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-	const stats = await getBookStats();
+	const [stats, { feeds }] = await Promise.all([getBookStats(), listFeeds({ limit: 3 })]);
 	const bookStats = [
 		{ value: `${stats.total}권`, label: '함께 읽는 책' },
 		{ value: `${stats.owners}명`, label: '책을 나눈 동료' },
@@ -155,6 +157,42 @@ export default async function Home() {
 			</section>
 
 			<BookDiscovery />
+
+			<section
+				id="feeds"
+				className="site-container pt-24 md:pt-32"
+			>
+				<div className="section-heading-row">
+					<div>
+						<span className="section-kicker">READING FEED</span>
+						<h2>동료가 남긴 최근 이야기</h2>
+						<p>같은 책을 읽은 동료의 기록을 만나보세요.</p>
+					</div>
+					<Link
+						className="section-more-link"
+						href="/feeds"
+					>
+						전체 피드 보기
+					</Link>
+				</div>
+				{feeds.length ? (
+					<div className="feed-list">
+						{feeds.map((feed) => (
+							<FeedCard
+								feed={feed}
+								key={feed.id}
+							/>
+						))}
+					</div>
+				) : (
+					<div className="feed-empty">
+						<NotebookPen size={26} />
+						<strong>아직 올라온 피드가 없어요</strong>
+						<p>빌린 책을 읽고 첫 번째 이야기를 남겨보세요.</p>
+						<Link href="/feeds/new">피드 쓰기</Link>
+					</div>
+				)}
+			</section>
 
 			<section
 				id="share"

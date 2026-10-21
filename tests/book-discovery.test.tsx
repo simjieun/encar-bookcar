@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BookDiscovery } from '@/components/book-discovery';
 
@@ -41,13 +40,12 @@ beforeEach(() => {
 	vi.stubGlobal(
 		'fetch',
 		vi.fn(async (input: string | URL | Request) => {
-			const url = String(input);
-			const empty = url.includes('query=%EC%97%86%EB%8A%94+%EC%B1%85');
+			const ownership = new URL(String(input), 'http://localhost').searchParams.get('ownership');
 			const personalBook = { ...sampleBook, id: 'personal-1', title: '아몬드', ownership: 'PERSONAL', ownerName: '이소장' };
 			return {
 				ok: true,
 				json: async () => ({
-					books: empty ? [] : [sampleBook, personalBook],
+					books: ownership === 'PERSONAL' ? [personalBook] : [sampleBook],
 					hasMore: false,
 					page: 1,
 				}),
@@ -57,29 +55,15 @@ beforeEach(() => {
 });
 
 describe('BookDiscovery', () => {
-	it('실제 도서 API에서 책을 표시하고 검색한다', async () => {
-		const user = userEvent.setup();
+	it('북클럽 책장과 동료의 서재를 섹션으로 나눠 보여준다', async () => {
 		renderDiscovery();
-		expect((await screen.findAllByText('소년이 온다')).length).toBeGreaterThan(0);
+		await screen.findByRole('heading', { name: '아몬드' });
 
-		const search = screen.getByRole('searchbox', {
-			name: '책 제목 또는 저자 검색',
-		});
-		await user.type(search, '한강{enter}');
-
-		expect(fetch).toHaveBeenCalledWith(expect.stringContaining('query=%ED%95%9C%EA%B0%95'));
-	});
-
-	it('검색 결과가 없으면 책 등록을 안내한다', async () => {
-		const user = userEvent.setup();
-		renderDiscovery();
-		const search = screen.getByRole('searchbox', {
-			name: '책 제목 또는 저자 검색',
-		});
-		await user.type(search, '없는 책{enter}');
-
-		expect(await screen.findByText('찾는 책이 아직 없어요')).toBeVisible();
-		expect(screen.getByRole('link', { name: '책 등록하기' })).toHaveAttribute('href', '/books/new');
+		expect(fetch).toHaveBeenCalledWith(expect.stringContaining('ownership=CLUB'));
+		expect(fetch).toHaveBeenCalledWith(expect.stringContaining('ownership=PERSONAL'));
+		expect(screen.getByRole('link', { name: '북클럽 책장 전체 보기' })).toHaveAttribute('href', '/books?ownership=CLUB');
+		expect(screen.getByRole('link', { name: '동료의 서재 전체 보기' })).toHaveAttribute('href', '/books?ownership=PERSONAL');
+		expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
 	});
 
 	it('개인 소장 책은 띠지와 소장자 문구로 북클럽 책과 구분한다', async () => {
